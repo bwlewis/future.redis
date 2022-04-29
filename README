@@ -1,0 +1,38 @@
+future.redis: A backend for the future package using Redis.
+
+Description
+
+The future package defines very simple and uniform way of evaluating R
+expressions asynchronously.
+
+Redis is a fast networked key/value database that includes a stack-like data
+structure (Redis "lists").  This feature makes Redis useful as a lightweight
+task-queue-like backend for elastic distributed computing.
+
+The future.redis package defines a simple elastic distributed computing backend
+for future using the redux package to communicate with Redis.
+
+Here is a quick example procedure for experimenting with future.redis:
+
+1. Install Redis on your computer.
+2. Install the future.redis package.
+3. Start the redis server running (see the redis documentation). We assume
+   that the server is running on the host "localhost" and port 6379 (the
+   default Redis port). We assume in the examples below that the worker R
+   processes and the coordinator are running on the same machine. In practice,
+   they can of course run across a network.
+4. Open one or more R sessions that will act as back-end worker processes.
+   Run the following in each session:
+```r
+   require('future.redis')
+   worker()
+```
+   (The R session will display status messages but otherwise block for
+   work.)
+   Note: You can add more workers to a task queue at any time.
+5. Open another R session that will act as the coordinator process. Run the
+   following example:
+```r
+  library('future.redis')
+  example(redis)
+```
