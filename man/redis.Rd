@@ -19,6 +19,6 @@ redis(..., queue = "RJOBS", config = redis_config(), output_queue = NA)
 An object of class [RedisFuture].
 }
 \description{
-Use the Redis key/value database to define partially fault-tolerant task
-queues for elastic distributed computing.
+Use the Redis key/value database to define partially fault-tolerant,
+asynchronous task queues for elastic distributed computing.
 }
