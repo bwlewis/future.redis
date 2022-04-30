@@ -6,18 +6,36 @@
 #' @inheritParams RedisFuture
 #' @importFrom redux redis_config
 #' @return An object of class [RedisFuture].
-#' @example
-#' plan(redis)
-#' data(warpbreaks)
-#' trials <- 1000
-#' Map(\(i) future({
-#'     i <- sample(NROW(warpbreaks), replace=TRUE)
-#'     coefficients(lm(breaks ~ wool * tension, data = warpbreaks[i,]))
-#'   }, lazy = TRUE, seed = TRUE), seq(trials)
-#" ) |> (
-#'        \(v) Reduce(function(x,y) rbind(x, value(y)), init=NULL, v)
-#'      )() -> ans
-#' plot(density(ans[, 2]), main = "wool coef")
+#' @seealso \code{\link{redux::redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
+#' @examples
+#' library(future.redis)
+#' 
+#' if (redux::redis_available()) {
+#' ## The example assumes that a Redis server is running on the local host
+#' ## and standard port.
+#' 
+#' # Register the redis plan on a specified task queue:
+#' plan(redis, queue = "R jobs")
+#' 
+#' # Start some local R worker processes:
+#' startLocalWorkers(n=2, queue="R jobs", linger=1)
+#' 
+#' # Alternatively, use the following to run the workers quietly without
+#' # showing their output as they run:
+#' # startLocalWorkers(n=2, queue="R jobs", linger=1, log="/dev/null")
+#' 
+#' # An expression that runs a simple sampling approximation of pi
+#' # in parallel using  M * N points:
+#' N <- 1e6  # samples per worker
+#' M <- 10   # iterations
+#' est <- Reduce(sum, Map(value, 
+#'          replicate(M, future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}))
+#'        )) / M
+#' print(est)
+#' 
+#' # Clean up
+#' removeQ("R jobs")
+#' }
 #' @export
 redis <- function(...,
                   queue = "RJOBS",
@@ -36,10 +54,13 @@ class(redis) <- c("RedisFuture", "future", "function")
 #'
 #' @param config Redis config
 #' @param queue Redis key name of the task queue (Redis list)
+#' @return NULL is silently returned (this function is evaluated for the
+#' side-effect of altering Redis state).
 #' @importFrom redux redis_config hiredis
 #' @export
 removeQ <- function(queue = "RJOBS", config = redis_config())
 {
   hiredis(config)[["DEL"]](sprintf("%s.live", queue)) # liveness key
   hiredis(config)[["DEL"]](queue)                     # the task queue
+  invisible()
 }

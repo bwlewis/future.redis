@@ -21,18 +21,4 @@ Here is a quick example procedure for experimenting with future.redis:
    default Redis port). We assume in the examples below that the worker R
    processes and the coordinator are running on the same machine. In practice,
    they can of course run across a network.
-4. Open one or more R sessions that will act as back-end worker processes.
-   Run the following in each session:
-```r
-   require('future.redis')
-   worker()
-```
-   (The R session will display status messages but otherwise block for
-   work.)
-   Note: You can add more workers to a task queue at any time.
-5. Open another R session that will act as the coordinator process. Run the
-   following example:
-```r
-  library('future.redis')
-  example(redis)
-```
+4. See the `?redis` example in the package.

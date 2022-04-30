@@ -13,7 +13,8 @@
 #' @param packages (optional) R packages to load on worker processes
 #' @param config Redis config
 #' @param queue Redis key name of the task queue (Redis list)
-#' @param output_queue (optional) Redis key name of the work output queue (Redis list)
+#' @param output_queue (optional) Redis key name of the work output queue
+#'        (note: reserved for future use).
 #' @return An object of class `RedisFuture`.
 #' @aliases run.RedisFuture
 #' @keywords internal

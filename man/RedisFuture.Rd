@@ -45,7 +45,8 @@ eagerly (starting immediately), otherwise not.}
 
 \item{config}{Redis config}
 
-\item{output_queue}{(optional) Redis key name of the work output queue (Redis list)}
+\item{output_queue}{(optional) Redis key name of the work output queue
+(note: reserved for future use).}
 
 \item{...}{Additional named elements of the future.}
 }

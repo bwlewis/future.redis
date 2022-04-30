@@ -13,7 +13,8 @@ redis(..., queue = "RJOBS", config = redis_config(), output_queue = NA)
 
 \item{config}{Redis config}
 
-\item{output_queue}{(optional) Redis key name of the work output queue (Redis list)}
+\item{output_queue}{(optional) Redis key name of the work output queue
+(note: reserved for future use).}
 }
 \value{
 An object of class [RedisFuture].
@@ -21,4 +22,37 @@ An object of class [RedisFuture].
 \description{
 Use the Redis key/value database to define partially fault-tolerant,
 asynchronous task queues for elastic distributed computing.
+}
+\examples{
+library(future.redis)
+
+if (redux::redis_available()) {
+## The example assumes that a Redis server is running on the local host
+## and standard port.
+
+# Register the redis plan on a specified task queue:
+plan(redis, queue = "R jobs")
+
+# Start some local R worker processes:
+startLocalWorkers(n=2, queue="R jobs", linger=1)
+
+# Alternatively, use the following to run the workers quietly without
+# showing their output as they run:
+# startLocalWorkers(n=2, queue="R jobs", linger=1, log="/dev/null")
+
+# An expression that runs a simple sampling approximation of pi
+# in parallel using  M * N points:
+N <- 1e6  # samples per worker
+M <- 10   # iterations
+est <- Reduce(sum, Map(value, 
+         replicate(M, future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}))
+       )) / M
+print(est)
+
+# Clean up
+removeQ("R jobs")
+}
+}
+\seealso{
+\code{\link{redux::redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
 }

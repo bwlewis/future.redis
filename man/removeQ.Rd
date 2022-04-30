@@ -11,6 +11,10 @@ removeQ(queue = "RJOBS", config = redis_config())
 
 \item{config}{Redis config}
 }
+\value{
+NULL is silently returned (this function is evaluated for the
+side-effect of altering Redis state).
+}
 \description{
 Removing the work queue signlas to local and remote R workers to exit.
 }
