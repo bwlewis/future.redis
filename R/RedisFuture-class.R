@@ -1,4 +1,5 @@
-#' A Redis future implementation.
+#' A Redis-based future task queue implementation
+#'
 #' Set up the future parameters.
 #'
 #' @inheritParams future::`Future-class`

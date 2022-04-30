@@ -9,7 +9,7 @@ startLocalWorkers(
   queue = "RJOBS",
   config = redis_config(),
   iter = Inf,
-  linger = 30,
+  linger = 10,
   log = NULL,
   Rbin = paste(R.home(component = "bin"), "R", sep = "/")
 )

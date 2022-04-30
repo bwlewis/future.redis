@@ -57,6 +57,7 @@ worker <- function(queue = "RJOBS",
 #' Process a task
 #' @param task A Redis key containing the future to process
 #' @param redis A hiredis connection
+#' @importFrom future getExpression
 #' @keywords internal
 processTask <- function(task, redis)
 {
@@ -71,11 +72,7 @@ processTask <- function(task, redis)
   for(p in future[["packages"]]) {
     require(p, quietly = TRUE, character.only = TRUE)
   }
-  ans <- FutureResult(
-    value = eval(future[["expr"]], envir = future[["envir"]]),
-    started = t_start,
-    finished = Sys.time()
-  )
+  ans <- eval(getExpression(future))
   # Detach packages
   for(p in future[["packages"]]) {
     tryCatch(detach(sprintf("package:%s", p), character.only = TRUE), error = invisible)
@@ -134,7 +131,7 @@ processTask <- function(task, redis)
 #' }
 #' @export
 startLocalWorkers <- function(n, queue = "RJOBS",
-  config = redis_config(), iter = Inf, linger = 30, log = NULL,
+  config = redis_config(), iter = Inf, linger = 10, log = NULL,
   Rbin = paste(R.home(component = "bin"), "R", sep="/"))
 {
   args <- list(queue = queue, linger = linger, config = config,

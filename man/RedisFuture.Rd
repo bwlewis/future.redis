@@ -3,8 +3,7 @@
 \name{RedisFuture}
 \alias{RedisFuture}
 \alias{run.RedisFuture}
-\title{A Redis future implementation.
-Set up the future parameters.}
+\title{A Redis-based future task queue implementation}
 \usage{
 RedisFuture(
   expr = NULL,
@@ -54,7 +53,6 @@ eagerly (starting immediately), otherwise not.}
 An object of class `RedisFuture`.
 }
 \description{
-A Redis future implementation.
 Set up the future parameters.
 }
 \keyword{internal}
