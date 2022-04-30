@@ -22,13 +22,12 @@
 #' # showing their output as they run:
 #' # startLocalWorkers(n=2, queue="R jobs", linger=1, log="/dev/null")
 #' 
-#' # A function that returns a future
+#' # A function that returns a future, note that N uses lexical scoping...
 #' f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
 #' 
 #' # Run a simple sampling approximation of pi in parallel using  M * N points:
 #' N <- 1e6  # samples per worker
 #' M <- 10   # iterations
-#' 
 #' Reduce(sum, Map(value, replicate(M, f()))) / M
 #' 
 #' # Clean up
