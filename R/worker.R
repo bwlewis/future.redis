@@ -72,7 +72,7 @@ processTask <- function(task, redis)
   for(p in future[["packages"]]) {
     require(p, quietly = TRUE, character.only = TRUE)
   }
-  ans <- eval(getExpression(future))
+  ans <- eval(getExpression(future), envir = future[["envir"]])
   # Detach packages
   for(p in future[["packages"]]) {
     tryCatch(detach(sprintf("package:%s", p), character.only = TRUE), error = invisible)
@@ -102,8 +102,6 @@ processTask <- function(task, redis)
 #' @return NULL is invisibly returned.
 #' @seealso \code{\link{redux::redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
 #' @examples
-#' library(future.redis)
-#' 
 #' if (redux::redis_available()) {
 #' ## The example assumes that a Redis server is running on the local host
 #' ## and standard port.
@@ -118,13 +116,14 @@ processTask <- function(task, redis)
 #' # showing their output as they run:
 #' # startLocalWorkers(n=2, queue="R jobs", linger=1, log="/dev/null")
 #' 
+#' # A function that returns a future
+#' f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
+#' 
 #' # Run a simple sampling approximation of pi in parallel using  M * N points:
 #' N <- 1e6  # samples per worker
 #' M <- 10   # iterations
-#' est <- Reduce(sum, Map(value, 
-#'          replicate(M, future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}))
-#'        )) / M
-#' print(est)
+#' 
+#' Reduce(sum, Map(value, replicate(M, f()))) / M
 #' 
 #' # Clean up
 #' removeQ("R jobs")
