@@ -40,8 +40,7 @@ startLocalWorkers(n=2, queue="R jobs", linger=1)
 # showing their output as they run:
 # startLocalWorkers(n=2, queue="R jobs", linger=1, log="/dev/null")
 
-# An expression that runs a simple sampling approximation of pi
-# in parallel using  M * N points:
+# Run a simple sampling approximation of pi in parallel using  M * N points:
 N <- 1e6  # samples per worker
 M <- 10   # iterations
 est <- Reduce(sum, Map(value, 
