@@ -116,13 +116,12 @@ processTask <- function(task, redis)
 #' # showing their output as they run:
 #' # startLocalWorkers(n=2, queue="R jobs", linger=1, log="/dev/null")
 #' 
-#' # A function that returns a future
+#' # A function that returns a future (note the scope of N)
 #' f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
 #' 
 #' # Run a simple sampling approximation of pi in parallel using  M * N points:
 #' N <- 1e6  # samples per worker
 #' M <- 10   # iterations
-#' 
 #' Reduce(sum, Map(value, replicate(M, f()))) / M
 #' 
 #' # Clean up
@@ -135,8 +134,7 @@ startLocalWorkers <- function(n, queue = "RJOBS",
 {
   args <- list(queue = queue, linger = linger, config = config,
                iter = iter, quit = TRUE, log = log)
-  cmd <- sprintf("suppressMessages(require(future.redis, quietly = TRUE)); args <- unserialize(base64enc::base64decode('%s')); do.call('worker', args)",
-           base64encode(serialize(args, NULL)))
-  replicate(n, system2(Rbin, args = "-s --no-save",  input = cmd, wait=FALSE))
+  cmd <- sprintf("-s --no-save -e \"suppressMessages(require(future.redis, quietly = TRUE)); args <- unserialize(base64enc::base64decode('%s')); do.call('worker', args)\"", base64encode(serialize(args, NULL)))
+  replicate(n, system2(Rbin, args = cmd, wait=FALSE))
   invisible()
 }

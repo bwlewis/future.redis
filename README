@@ -1,4 +1,4 @@
-future.redis: A backend for the future package using Redis.
+future.redis: An elastic backend for the future package using Redis.
 
 Description
 
@@ -10,7 +10,11 @@ structure (Redis "lists").  This feature makes Redis useful as a lightweight
 task-queue-like backend for elastic distributed computing.
 
 The future.redis package defines a simple elastic distributed computing backend
-for future using the redux package to communicate with Redis.
+for future using the redux package to communicate with Redis. Elastic means
+that workers can be added or removed at any time, including during a running
+computation. Elasticity implies partial fault-tolerance (to handle workers that
+go away during a running computation). This style of distributed computing is
+well-suited to modern cloud environments, and especially cloud spot markets.
 
 Here is a quick example procedure for experimenting with future.redis:
 
