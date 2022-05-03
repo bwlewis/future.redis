@@ -1,5 +1,4 @@
 ## Copied from the future package
-
 ## Assign globals to an specific environment and set that environment
 ## for functions.  If they are functions of namespaces/packages
 ## and exclude == "namespace", then the globals are not assigned
@@ -43,4 +42,41 @@ inherits_from_namespace <- function(env) {
     env <- parent.env(env)
   }
   FALSE
+}
+
+uncerealize <- function(x)
+{
+  if(!is.null(x) && is.raw(x)) unserialize(x) else x
+}
+
+#' Start a task liveness thread
+#'
+#' setAlive and delAlive support worker fault tolerance and are only to be
+#' use internally by the package.
+#' @param port Redis port
+#' @param host Redis host name
+#' @param key The task liveness key to maintain
+#' @param password (optional) Redis password
+#' @return Invoked for the side-effect of maintaining a task liveness
+#' key, \code{NULL} is invisibly returned.
+#' @keywords internal
+`setAlive` <- function(port, host, key, password)
+{
+  if(missing(password)) password <- ""
+  if(is.null(password)) password <- ""
+  invisible(
+    .Call(C_setAlive, as.integer(port), as.character(host),
+        as.character(key), as.character(password), PACKAGE = "future.redis"))
+}
+
+#' End a task liveness thread
+#'
+#' setAlive and delAlive support worker fault tolerance and are only to be
+#' use internally by the package.
+#' @return Invoked for the side-effect of ending a maintenance thread for
+#'  a task liveness key, \code{NULL} is invisibly returned.
+#' @keywords internal
+`delAlive` <- function()
+{
+  invisible(.Call(C_delAlive, PACKAGE="future.redis"))
 }

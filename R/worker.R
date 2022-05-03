@@ -63,21 +63,18 @@ worker <- function(queue = "RJOBS",
 #' @keywords internal
 processTask <- function(task, redis)
 {
+  on.exit(delAlive())
   t_start <- Sys.time()
   future <- tryCatch(uncerealize(redis[["GET"]](key = task)), error = function(e) NULL)
   if(is.null(future)) return()
   message("Obtained future ", task, " ", t_start)
 
-
-# XXX TODO: Start thread to maintain task liveness key
-
+  # Start thread to maintain task liveness key
   alive <- sprintf("%s.%s.live", future[["queue"]], future[["taskid"]])
-  redis_multi(redis, {
-    redis[["SET"]](key = alive, value = "")
-    redis[["EXPIRE"]](key = alive, seconds = 10)
-  })
-
-# XXX XXX XXX XXX
+  setAlive(port = redis[["config"]]()[["port"]],
+           host = redis[["config"]]()[["host"]],
+           key = alive,
+           password = redis[["config"]]()[["password"]])
 
   # Process the future, first attaching required packages (if any)
   for(p in future[["packages"]]) {

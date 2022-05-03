@@ -11,12 +11,7 @@
 #' }
 #'
 #' @docType package
+#' @useDynLib future.redis, .registration=TRUE, .fixes="C_"
 #' @aliases future.redis-package
 #' @name future.redis
 NULL
-
-
-uncerealize <- function(x)
-{
-  if(!is.null(x) && is.raw(x)) unserialize(x) else x
-}
