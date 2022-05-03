@@ -37,9 +37,11 @@
 redis <- function(...,
                   queue = "RJOBS",
                   config = redis_config(),
-                  output_queue = NA)
+                  output_queue = NA,
+                  max_retries = 3)
 {
-  future <- RedisFuture(..., queue=queue, config=config, output_queue=output_queue)
+  future <- RedisFuture(..., queue=queue, config=config,
+              output_queue=output_queue, max_retries = max_retries)
   invisible(run(future))
 }
 class(redis) <- c("RedisFuture", "future", "function")
@@ -47,6 +49,7 @@ class(redis) <- c("RedisFuture", "future", "function")
 
 #' Remove a Redis-based work queue
 #'
+#' Redis keys beginning with the \code{queue} name are removed.
 #' Removing the work queue signlas to local and remote R workers to exit.
 #'
 #' @param config Redis config

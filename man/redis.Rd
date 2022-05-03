@@ -4,7 +4,13 @@
 \alias{redis}
 \title{Redis-based futures}
 \usage{
-redis(..., queue = "RJOBS", config = redis_config(), output_queue = NA)
+redis(
+  ...,
+  queue = "RJOBS",
+  config = redis_config(),
+  output_queue = NA,
+  max_retries = 3
+)
 }
 \arguments{
 \item{...}{Additional named elements of the future.}
@@ -15,6 +21,9 @@ redis(..., queue = "RJOBS", config = redis_config(), output_queue = NA)
 
 \item{output_queue}{(optional) Redis key name of the work output queue
 (note: reserved for future use).}
+
+\item{max_retries}{Maximum number of times the future can be submitted
+to the task queue in the event of failure.}
 }
 \value{
 An object of class [RedisFuture].

@@ -34,7 +34,7 @@ worker <- function(queue = "RJOBS",
   msg <- tryCatch({
     N <- double(1)
     hi <- hiredis(config)
-    # Set liveness key
+    # Set task queue liveness key
     live <- sprintf("%s.live", queue)
     hi[["SET"]](key = live, value = "")
     if(interactive()) message("Waiting for doRedis jobs.")
@@ -43,6 +43,7 @@ worker <- function(queue = "RJOBS",
       if(!is.null(taskid)) {
         message("Retrieved task ", taskid)
         N <- N + 1
+        hi[["SET"]](key = sprintf("%s.%s.status", queue, taskid), value = "running")
         processTask(sprintf("%s.%s", queue, taskid), hi)
       }
       # Check for queue liveness key, worker exit if missing
@@ -57,6 +58,7 @@ worker <- function(queue = "RJOBS",
 #' Process a task
 #' @param task A Redis key containing the future to process
 #' @param redis A hiredis connection
+#' @importFrom redux redis_multi
 #' @importFrom future getExpression
 #' @keywords internal
 processTask <- function(task, redis)
@@ -65,8 +67,17 @@ processTask <- function(task, redis)
   future <- tryCatch(uncerealize(redis[["GET"]](key = task)), error = function(e) NULL)
   if(is.null(future)) return()
   message("Obtained future ", task, " ", t_start)
-# XXX check class
+
+
 # XXX TODO: Start thread to maintain task liveness key
+
+  alive <- sprintf("%s.%s.live", future[["queue"]], future[["taskid"]])
+  redis_multi(redis, {
+    redis[["SET"]](key = alive, value = "")
+    redis[["EXPIRE"]](key = alive, seconds = 10)
+  })
+
+# XXX XXX XXX XXX
 
   # Process the future, first attaching required packages (if any)
   for(p in future[["packages"]]) {
@@ -77,10 +88,14 @@ processTask <- function(task, redis)
   for(p in future[["packages"]]) {
     tryCatch(detach(sprintf("package:%s", p), character.only = TRUE), error = invisible)
   }
-  message("Submitting result to ", future[["output_queue"]], " ", ans[["finished"]])
-  redis[["LPUSH"]](key = future[["output_queue"]], serialize(ans, NULL))
+  # Submit result if task status key exists, otherwise discard
+  status <- sprintf("%s.%s.status", future[["queue"]], future[["taskid"]])
+  if(redis[["EXISTS"]](status)) {
+    message("Submitting result to ", future[["output_queue"]], " ", ans[["finished"]])
+    redis[["LPUSH"]](key = future[["output_queue"]], serialize(ans, NULL))
+    redis[["SET"]](key = status, value = "finished")
+  }
 }
-
 
 
 

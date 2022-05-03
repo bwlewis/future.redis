@@ -16,5 +16,6 @@ NULL is silently returned (this function is evaluated for the
 side-effect of altering Redis state).
 }
 \description{
+Redis keys beginning with the \code{queue} name are removed.
 Removing the work queue signlas to local and remote R workers to exit.
 }

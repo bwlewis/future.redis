@@ -15,6 +15,7 @@ RedisFuture(
   queue = "RJOBS",
   config = redis_config(),
   output_queue = NA,
+  max_retries = 3,
   ...
 )
 }
@@ -46,6 +47,9 @@ eagerly (starting immediately), otherwise not.}
 
 \item{output_queue}{(optional) Redis key name of the work output queue
 (note: reserved for future use).}
+
+\item{max_retries}{Maximum number of times the future can be submitted
+to the task queue in the event of failure.}
 
 \item{...}{Additional named elements of the future.}
 }
