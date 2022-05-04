@@ -12,6 +12,6 @@ Invoked for the side-effect of ending a maintenance thread for
 }
 \description{
 setAlive and delAlive support worker fault tolerance and are only to be
-use internally by the package.
+use internally by the package. It's safe to call delAlive multiple times.
 }
 \keyword{internal}

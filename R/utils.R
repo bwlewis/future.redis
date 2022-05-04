@@ -52,7 +52,8 @@ uncerealize <- function(x)
 #' Start a task liveness thread
 #'
 #' setAlive and delAlive support worker fault tolerance and are only to be
-#' use internally by the package.
+#' use internally by the package. It's safe to call setAlive and delAlive
+#' multiple times; at most one copy of the liveness thread is run.
 #' @param port Redis port
 #' @param host Redis host name
 #' @param key The task liveness key to maintain
@@ -72,7 +73,7 @@ uncerealize <- function(x)
 #' End a task liveness thread
 #'
 #' setAlive and delAlive support worker fault tolerance and are only to be
-#' use internally by the package.
+#' use internally by the package. It's safe to call delAlive multiple times.
 #' @return Invoked for the side-effect of ending a maintenance thread for
 #'  a task liveness key, \code{NULL} is invisibly returned.
 #' @keywords internal
