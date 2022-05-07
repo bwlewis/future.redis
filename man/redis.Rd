@@ -60,5 +60,5 @@ removeQ("R jobs")
 }
 }
 \seealso{
-\code{\link{redux::redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
+\code{\link{redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
 }

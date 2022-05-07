@@ -6,7 +6,7 @@
 #' @inheritParams RedisFuture
 #' @importFrom redux redis_config
 #' @return An object of class [RedisFuture].
-#' @seealso \code{\link{redux::redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
+#' @seealso \code{\link{redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
 #' @examples
 #' if (redux::redis_available()) {
 #' ## The example assumes that a Redis server is running on the local host

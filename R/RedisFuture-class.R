@@ -19,9 +19,8 @@
 #' @param max_retries Maximum number of times the future can be submitted
 #'        to the task queue in the event of failure.
 #' @return An object of class `RedisFuture`.
-#' @aliases run.RedisFuture
 #' @keywords internal
-#' @importFrom future getGlobalsAndPackages
+#' @importFrom future getGlobalsAndPackages Future
 #' @importFrom redux redis_config
 #' @export
 RedisFuture <- function(expr = NULL,
@@ -39,7 +38,7 @@ RedisFuture <- function(expr = NULL,
   if (substitute) expr <- substitute(expr)
   ## Record globals
   if (!isTRUE(attr(globals, "already-done", exact = TRUE))) {
-    gp <- getGlobalsAndPackages(expr, envir = envir, persistent = persistent, globals = globals)
+    gp <- getGlobalsAndPackages(expr, envir = envir, persistent = FALSE, globals = globals)
     globals <- gp[["globals"]]
     packages <- c(packages, gp[["packages"]])
     expr <- gp[["expr"]]
@@ -98,6 +97,7 @@ resolved.RedisFuture <- function(x, ...) {
 #' @param future An object of class RedisFuture
 #' @param redis A redux Redis connection
 #' @importFrom redux redis_multi
+#' @importFrom future FutureResult
 #' @keywords internal
 resubmit <- function(future, redis) {
   future[["state"]] <- "created"
@@ -123,8 +123,11 @@ resubmit <- function(future, redis) {
 }
 
 #' Submit the future to the task queue
+#' @param future an object of class \code{Redis.future}
+#' @param ... additional parameters for \code{future} class methods
 #' @importFrom digest digest
 #' @importFrom redux hiredis
+#' @importFrom future run
 #' @export
 run.RedisFuture <- function(future, ...) {
   if(isTRUE(future[["state"]] != "created")) return(invisible(future))
@@ -147,6 +150,9 @@ run.RedisFuture <- function(future, ...) {
 }
 
 #' Obtain and return a future task result (blocking)
+#' @param future an object of class \code{Redis.future}
+#' @param ... additional parameters for \code{future} class methods
+#' @importFrom future result
 #' @export
 result.RedisFuture <- function(future, ...) {
   if(isTRUE(future[["state"]] == "finished")) {

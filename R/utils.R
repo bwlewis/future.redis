@@ -22,7 +22,7 @@ assign_globals <- function(envir, globals, exclude = getOption("future.assign_gl
         if (identical(w, emptyenv())) {
           environment(global) <- envir
           if (debug) {
-            mdebugf("- reassign environment for %s", sQuote(name))
+            message("- reassign environment for %s", name)
             where[[name]] <- envir
             globals[[name]] <- global
           }

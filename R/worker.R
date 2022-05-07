@@ -7,7 +7,7 @@
 #' communication or other error occurs; after which the worker exits (quits R).
 #' @param queue Redis task queue name.
 #' @param linger in seconds, max time before system checks (including termination).
-#' @param config Redis configuration (see \code{\link{redux::redis_config}}
+#' @param config Redis configuration (see \code{\link{redis_config}}
 #' @param iter Maximum number of tasks to acquire before exiting.
 #' @param quit if TRUE, quit R on exit.
 #' @param log divert stdout and messages to log file.
@@ -112,7 +112,7 @@ processTask <- function(task, redis)
 #' @importFrom redux redis_config hiredis
 #' @importFrom base64enc base64encode
 #' @return NULL is invisibly returned.
-#' @seealso \code{\link{redux::redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
+#' @seealso \code{\link{redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
 #' @examples
 #' if (redux::redis_available()) {
 #' ## The example assumes that a Redis server is running on the local host

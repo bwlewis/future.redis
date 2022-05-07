@@ -2,7 +2,6 @@
 % Please edit documentation in R/RedisFuture-class.R
 \name{RedisFuture}
 \alias{RedisFuture}
-\alias{run.RedisFuture}
 \title{A Redis-based future task queue implementation}
 \usage{
 RedisFuture(

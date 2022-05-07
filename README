@@ -25,4 +25,4 @@ Here is a quick example procedure for experimenting with future.redis:
    default Redis port). We assume in the examples below that the worker R
    processes and the coordinator are running on the same machine. In practice,
    they can of course run across a network.
-4. See the `?redis` example in the package.
+4. See the `?redis` plan example in the package.
