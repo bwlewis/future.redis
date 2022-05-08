@@ -85,7 +85,7 @@ resolved.RedisFuture <- function(x, ...) {
     if(!isTRUE(status[[2]] == 1)) {
       # The task is marked running but the corresponding 'live' key has expired.
       # Re-submit the tasks to the queue.
-      resubmit(x)
+      resubmit(x, hi)
       return(FALSE)
     }
   }
