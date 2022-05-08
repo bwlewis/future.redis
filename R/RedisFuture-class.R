@@ -51,7 +51,7 @@ RedisFuture <- function(expr = NULL,
                    envir = envir,
                    substitute = substitute,
                    packages = packages,
-                   lazy = TRUE,
+                   lazy = lazy,
                    ...)
   future[["config"]] <- config
   future[["queue"]] <- queue
