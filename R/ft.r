@@ -12,4 +12,3 @@
 {
   invisible(.Call(C_delAlive, PACKAGE="future.redis"))
 }
-

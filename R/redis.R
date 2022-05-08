@@ -42,7 +42,8 @@ redis <- function(...,
 {
   future <- RedisFuture(..., queue=queue, config=config,
               output_queue=output_queue, max_retries = max_retries)
-  invisible(run(future))
+  if(!isTRUE(future[["lazy"]])) future <- run(future)
+  invisible(future)
 }
 class(redis) <- c("RedisFuture", "future", "function")
 
