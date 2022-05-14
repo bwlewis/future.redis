@@ -13,7 +13,9 @@ queues for elastic distributed computing.
 \examples{
 \donttest{
 plan(redis)
+startLocalWorkers(2, linger=1)
 demo("mandelbrot", package = "future", ask = FALSE)
+removeQ()
 }
 
 }
