@@ -27,3 +27,14 @@ Here is a quick example procedure for experimenting with future.redis:
    processes and the coordinator are running on the same machine. In practice,
    they can of course run across a network.
 4. See the `?redis` plan example in the package, and also `?future.redis`.
+
+
+Misc. notes (to be removed):
+
+The nbrOfWorkers function makes little sense here, as that quantity is dynamic.
+
+The idea of 'lazy' and 'eager' is a but muddled in this context as the
+coordinating R process is not in control of when, where, or how the work is
+processed (it's simply submitting tasks into a queue).  I guess that lazy means
+tasks are not even submitted into a queue until their result is requested? This
+is not yet implemented well/correctly XXX.
