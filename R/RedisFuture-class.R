@@ -83,16 +83,15 @@ resolved.RedisFuture <- function(x, ...) {
     hi[["GET"]](sprintf("%s.%s.status", x[["queue"]], x[["taskid"]]))
     hi[["EXISTS"]](sprintf("%s.%s.live", x[["queue"]], x[["taskid"]]))
   })
-  x[["state"]] <- status[[1]]
   # check for task problems
-  if(isTRUE(x[["state"]] == "running")) {
+  if(isTRUE(status[[1]] == "running")) {
     if(!isTRUE(status[[2]] == 1)) {
       # The task is marked running but the corresponding 'live' key has expired.
       # Re-submit the tasks to the queue.
       return(!isTRUE(is.null(resubmit(x, hi))))
     }
   }
-  isTRUE(x[["state"]] == "finished")
+  isTRUE(status[[1]] == "finished")
 }
 
 
