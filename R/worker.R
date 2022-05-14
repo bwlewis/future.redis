@@ -70,6 +70,7 @@ processTask <- function(task, redis)
 
   # Start thread to maintain task liveness key
   alive <- sprintf("%s.%s.live", future[["queue"]], future[["taskid"]])
+  redis[["SET"]](key = alive, value = "OK")
   setAlive(port = redis[["config"]]()[["port"]],
            host = redis[["config"]]()[["host"]],
            key = alive,
