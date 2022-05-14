@@ -1,5 +1,9 @@
 future.redis: An elastic backend for the future package using Redis.
 
+To do/Work in process:
+The package is not passing all the future.tests/check tests yet, problems mostly now
+in resolve-related methods.
+
 Description
 
 The future package defines very simple and uniform way of evaluating R
