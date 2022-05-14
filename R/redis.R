@@ -61,6 +61,7 @@ class(redis) <- c("RedisFuture", "future", "function")
 #' @export
 removeQ <- function(queue = "RJOBS", config = redis_config())
 {
+  hiredis(config)[["DEL"]](sprintf("%s.live", queue))  # task queue liveness key
   all_keys <- hiredis(config)[["KEYS"]](sprintf("%s.*", queue))
   del <- hiredis(config)[["DEL"]]
   Map(del, all_keys)
