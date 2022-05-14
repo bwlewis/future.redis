@@ -4,5 +4,12 @@ library("future.tests")
 plan(redis)
 removeQ()
 startLocalWorkers(1, linger=1)
-check("redis", timeout = 10, exit_value = FALSE)
-removeQ()
+
+run <- function()
+{
+  on.exit(removeQ())
+  check("redis", timeout = 10, exit_value = FALSE)
+  # NOTE: if exit_value = TRUE and not interactive (say, R CMD check) then
+  # quits R session before we can clean up Redis with removeQ.
+}
+result <- run()
