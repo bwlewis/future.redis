@@ -71,8 +71,12 @@ RedisFuture <- function(expr = NULL,
 resolved.RedisFuture <- function(x, ...) {
   resolved <- NextMethod()
   if(resolved) return(TRUE)
-  if(x[["state"]] == "finished") return(TRUE)
-
+  if(x[["state"]] == "finished") {
+    return(TRUE)
+  } else if(x[["state"]] == "created") { # Not yet submitted to queue (iff lazy)
+    x <- run(x)
+    return(FALSE)
+  }
   # return status key for this task from Redis
   hi <- hiredis(x[["config"]])
   status <- redis_multi(hi, {
@@ -85,8 +89,7 @@ resolved.RedisFuture <- function(x, ...) {
     if(!isTRUE(status[[2]] == 1)) {
       # The task is marked running but the corresponding 'live' key has expired.
       # Re-submit the tasks to the queue.
-      resubmit(x, hi)
-      return(FALSE)
+      return(!isTRUE(is.null(resubmit(x, hi))))
     }
   }
   isTRUE(x[["state"]] == "finished")
@@ -98,6 +101,8 @@ resolved.RedisFuture <- function(x, ...) {
 #' @param redis A redux Redis connection
 #' @importFrom redux redis_multi
 #' @importFrom future FutureResult
+#' @return If the number of retries is less than or equal to the maximum number of retries,
+#' then the re-submitted future is invisibly returned. Otherwise NULL is returned.
 #' @keywords internal
 resubmit <- function(future, redis) {
   future[["state"]] <- "created"

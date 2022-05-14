@@ -10,7 +10,7 @@ RedisFuture(
   globals = TRUE,
   packages = NULL,
   envir = parent.frame(),
-  lazy = TRUE,
+  lazy = FALSE,
   queue = "RJOBS",
   config = redis_config(),
   output_queue = NA,

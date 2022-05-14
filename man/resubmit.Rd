@@ -11,6 +11,10 @@ resubmit(future, redis)
 
 \item{redis}{A redux Redis connection}
 }
+\value{
+If the number of retries is less than or equal to the maximum number of retries,
+then the re-submitted future is invisibly returned. Otherwise NULL is returned.
+}
 \description{
 Re-submit a future to the task queue
 }

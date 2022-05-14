@@ -19,7 +19,7 @@
 #' startLocalWorkers(n=2, queue="R jobs", linger=1)
 #' 
 #' # Alternatively, use the following to run the workers quietly without
-#' # showing their output as they run:
+#' # showing messages as they run:
 #' # startLocalWorkers(n=2, queue="R jobs", linger=1, log="/dev/null")
 #' 
 #' # A function that returns a future, note that N uses lexical scoping...

@@ -43,7 +43,6 @@ worker <- function(queue = "RJOBS",
       if(!is.null(taskid)) {
         message("Retrieved task ", taskid)
         N <- N + 1
-        hi[["SET"]](key = sprintf("%s.%s.status", queue, taskid), value = "running")
         processTask(sprintf("%s.%s", queue, taskid), hi)
       }
       # Check for queue liveness key, worker exit if missing
@@ -75,6 +74,7 @@ processTask <- function(task, redis)
            host = redis[["config"]]()[["host"]],
            key = alive,
            password = redis[["config"]]()[["password"]])
+  redis[["SET"]](key = sprintf("%s.%s.status", future[["queue"]], future[["taskid"]]), value = "running")
 
   # Process the future, first attaching required packages (if any)
   for(p in future[["packages"]]) {
