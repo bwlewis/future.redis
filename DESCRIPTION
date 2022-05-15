@@ -2,7 +2,8 @@ Package: future.redis
 Version: 0.0.1
 Depends:
     R (>= 3.2.0),
-    future (>= 1.23.0)
+    future (>= 1.23.0),
+    redux (>= 1.1.0)
 Suggests: future.tests
 Title: An elastic distributed computing backend for the future package
 Authors@R: c(person("Bryan", "Lewis", role=c("aut", "cre", "cph"),
