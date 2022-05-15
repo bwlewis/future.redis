@@ -68,6 +68,7 @@ processTask <- function(task, redis)
   if(is.null(future)) return()
   message("Obtained future ", task, " ", t_start)
 
+  # Set ephemeral task liveness key
   alive <- sprintf("%s.%s.live", future[["queue"]], future[["taskid"]])
   redis[["SET"]](key = alive, value = "OK")
   redis[["EXPIRE"]](alive, 5)
@@ -76,6 +77,7 @@ processTask <- function(task, redis)
            host = redis[["config"]]()[["host"]],
            key = alive,
            password = redis[["config"]]()[["password"]])
+  # Update task queue status
   redis[["SET"]](key = sprintf("%s.%s.status", future[["queue"]], future[["taskid"]]), value = "running")
 
   # Process the future, first attaching required packages (if any)
