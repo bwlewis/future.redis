@@ -24,14 +24,14 @@ if(nchar(Sys.getenv("TEST_FAULT")) > 0) {
   startLocalWorkers(2, linger = 1)
   t1 <- Sys.time()
   f <- quitter()
-  value(f)
+  if(!isTRUE(value(f) == pi)) stop("resubmit fault tolerance value error")
 
 # test of max retries on the remaining worker, expect an error
   plan(redis, max_retries = 1)
   t1 <- Sys.time()
   f <- quitter()
   ans <- value(f)
+  if(!isTRUE(inherits(ans, "error"))) stop("max_retries fault tolerance error")
 
   removeQ()
-
 }
