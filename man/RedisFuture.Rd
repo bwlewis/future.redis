@@ -37,8 +37,9 @@ globals are used as is.}
 \item{envir}{The \link{environment} from where global objects should be
 identified.}
 
-\item{lazy}{If FALSE (default), the future is resolved
-eagerly (starting immediately), otherwise not.}
+\item{lazy}{logical value, if \code{TRUE} then delay submitting the task
+associated with the future to the associated task queue in Redis until the
+future status is polled or its value is requested}
 
 \item{queue}{Redis key name of the task queue (Redis list)}
 

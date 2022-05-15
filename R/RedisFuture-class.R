@@ -12,6 +12,9 @@
 #' from environment `envir`.  If a named list or a Globals object, the
 #' globals are used as is.
 #' @param packages (optional) R packages to load on worker processes
+#' @param lazy logical value, if \code{TRUE} then delay submitting the task
+#' associated with the future to the associated task queue in Redis until the
+#' future status is polled or its value is requested
 #' @param config Redis config
 #' @param queue Redis key name of the task queue (Redis list)
 #' @param output_queue (optional) Redis key name of the work output queue
@@ -54,10 +57,10 @@ RedisFuture <- function(expr = NULL,
                    lazy = lazy,
                    ...)
   future[["config"]] <- config
-  future[["queue"]] <- queue
-  future[["retries"]] <- 0
+  future[["queue"]] <- as.character(queue)
+  future[["retries"]] <- 0L
   future[["state"]] <- "created"
-  future[["max_retries"]] <- max_retries
+  future[["max_retries"]] <- as.integer(max_retries)
   structure(future, class = c("RedisFuture", class(future)))
 }
 
@@ -107,10 +110,10 @@ resubmit <- function(future, redis) {
   future[["state"]] <- "created"
   future[["retries"]] <- tryCatch(
     future[["retries"]] + 1,
-    error = function(e) 1
+    error = function(e) Inf
   )
   warning(sprintf("Detected lost task %s, resubmitting (%d).", future[["taskid"]], future[["retries"]]))
-  if(isTRUE(future[["retries"]] > future[["max_retries"]])) {
+  if(isTRUE(future[["retries"]] >= future[["max_retries"]])) {
     # This task has exceeded the retry limit, return an error.
     status <- sprintf("%s.%s.status", future[["queue"]], future[["taskid"]])
     if(redis[["EXISTS"]](status)) {

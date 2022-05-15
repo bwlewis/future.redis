@@ -7,18 +7,31 @@
 #
 # Because this can take a while to run, this test is not run as a standard
 # CRAN check; to run it set the envinonment variable TEST_FAULT=1.
-if(nchar(Sys.getenv("TEST_FAULT")) > 0) { 
-  library("future.redis")
-  plan(redis)
-  startLocalWorkers(2, linger=1)
-  t1 <- Sys.time()
-  f <- future({
+
+quitter <- function() {
+  future({
     Sys.sleep(1.1)
     dt <- as.numeric(Sys.time() - t1)
     cat("Elapsed time: ", dt, "\n", file=stderr())
     if(dt < 2) q(save = "no")
     pi
   })
+}
+
+if(nchar(Sys.getenv("TEST_FAULT")) > 0) { 
+  library("future.redis")
+  plan(redis, max_retries = 2)
+  startLocalWorkers(2, linger = 1)
+  t1 <- Sys.time()
+  f <- quitter()
   value(f)
+
+# test of max retries on the remaining worker, expect an error
+  plan(redis, max_retries = 1)
+  t1 <- Sys.time()
+  f <- quitter()
+  ans <- value(f)
+
   removeQ()
+
 }
