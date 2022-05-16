@@ -126,7 +126,13 @@ resubmit <- function(future, redis) {
       return()
     }
   }
-  invisible(run(future))
+  # No need to re-serialize here, future already cached. simply re-submit ID to queue.
+  status <- sprintf("%s.%s.status", future[["queue"]], future[["taskid"]])
+  redis_multi(redis, {
+    redis[["SET"]](key = status, value = "submitted")
+    redis[["LPUSH"]](key = future[["queue"]], future[["taskid"]])
+  })
+  invisible(future)
 }
 
 #' Submit the future to the task queue
