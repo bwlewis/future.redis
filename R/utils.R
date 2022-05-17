@@ -3,7 +3,7 @@
 ## for functions.  If they are functions of namespaces/packages
 ## and exclude == "namespace", then the globals are not assigned
 ## Reference: https://github.com/HenrikBengtsson/future/issues/515
-assign_globals <- function(envir, globals, exclude = getOption("future.assign_globals.exclude", c("namespace")), debug = getOption("future.debug", FALSE)) {
+assign_globals <- function(envir, globals, exclude = getOption("future.assign_globals.exclude", c("namespace"))) {
   if(!isTRUE(is.environment(envir))) stop("invalid argument")
   if(!isTRUE(is.list(globals))) stop("invalid argument")
   if (length(globals) == 0L) return(envir)
@@ -21,11 +21,6 @@ assign_globals <- function(envir, globals, exclude = getOption("future.assign_gl
         ## Here I'm just being overly conservative ## /HB 2021-06-15
         if (identical(w, emptyenv())) {
           environment(global) <- envir
-          if (debug) {
-            message("- reassign environment for %s", name)
-            where[[name]] <- envir
-            globals[[name]] <- global
-          }
         }
       }
     }
