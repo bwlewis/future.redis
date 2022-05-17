@@ -27,7 +27,6 @@ worker <- function(queue = "RJOBS",
   }
   if(isTRUE(is.character(log)) && isTRUE(nchar(log) > 0)) {
     f <- file(log, open = "w+")
-    sink(f)
     sink(f, append = TRUE, type = "message")
     on.exit(sink(), add = TRUE)
   }
