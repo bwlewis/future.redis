@@ -26,12 +26,5 @@ Here is a quick example procedure for experimenting with future.redis:
    default Redis port). We assume in the examples below that the worker R
    processes and the coordinator are running on the same machine. In practice,
    they can of course run across a network.
-4. See the `?redis` plan example in the package, and also `?future.redis`.
+4. See the `?redis` or `?future.redis` help pages in the package.
 
-
-Misc. notes (to be removed):
-
-The nbrOfWorkers is ignored and, as that quantity is dynamic, and differently
-from the documentation can be legitimately zero (the doc states that
-nbrOfWorkers is a positive integer). We leave it at the default value of NULL,
-converted internally in the future package to Inf.
