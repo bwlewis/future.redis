@@ -7,9 +7,9 @@
 processTask(task, redis)
 }
 \arguments{
-\item{task}{A Redis key containing the future to process}
+\item{task}{A Redis key containing the future to process.}
 
-\item{redis}{A hiredis connection}
+\item{redis}{A hiredis connection.}
 }
 \description{
 Process a task

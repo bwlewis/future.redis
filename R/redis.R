@@ -34,18 +34,24 @@
 #' removeQ("R jobs")
 #' }
 #' @export
-redis <- function(...,
+redis <- function(expr,
+                  envir = parent.frame(),
+                  substitute = TRUE,
+                  globals = TRUE,
                   queue = "RJOBS",
                   config = redis_config(),
                   output_queue = NA,
-                  max_retries = 3)
+                  max_retries = 3, ...)
 {
-  future <- RedisFuture(..., queue=queue, config=config,
-              output_queue=output_queue, max_retries = max_retries)
+  if (substitute) expr <- substitute(expr)
+  future <- RedisFuture(expr = expr, envir = envir, substitute = FALSE,
+              globals = globals, queue=queue, config=config,
+              output_queue=output_queue, max_retries = max_retries, ...)
   if(!isTRUE(future[["lazy"]])) future <- run(future)
   invisible(future)
 }
 class(redis) <- c("RedisFuture", "future", "function")
+
 
 
 #' Remove a Redis-based work queue

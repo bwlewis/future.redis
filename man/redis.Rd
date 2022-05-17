@@ -5,25 +5,45 @@
 \title{Redis-based futures}
 \usage{
 redis(
-  ...,
+  expr,
+  envir = parent.frame(),
+  substitute = TRUE,
+  globals = TRUE,
   queue = "RJOBS",
   config = redis_config(),
   output_queue = NA,
-  max_retries = 3
+  max_retries = 3,
+  ...
 )
 }
 \arguments{
-\item{...}{Additional named elements of the future.}
+\item{expr}{An \R \link[base]{expression}.}
 
-\item{queue}{Redis key name of the task queue (Redis list)}
+\item{envir}{The \link{environment} from where global objects should be
+identified.}
 
-\item{config}{Redis config}
+\item{substitute}{If TRUE, argument \code{expr} is
+\code{\link[base]{substitute}()}:ed, otherwise not.}
+
+\item{globals}{(optional) a logical, a character vector, a named list, or
+a [globals::Globals] object.  If `TRUE`, globals are identified by code
+inspection based on `expr` and `tweak` searching from environment
+`envir`.  If `FALSE`, no globals are used.  If a character vector, then
+globals are identified by lookup based their names `globals` searching
+from environment `envir`.  If a named list or a Globals object, the
+globals are used as is.}
+
+\item{queue}{Redis key name of the task queue (Redis list).}
+
+\item{config}{Redis config.}
 
 \item{output_queue}{(optional) Redis key name of the work output queue
 (note: reserved for future use).}
 
 \item{max_retries}{Maximum number of times the future can be re-submitted
 to the task queue in the event of failure.}
+
+\item{...}{Additional named elements of the future.}
 }
 \value{
 An object of class [RedisFuture].

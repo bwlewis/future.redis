@@ -32,18 +32,18 @@ globals are identified by lookup based their names `globals` searching
 from environment `envir`.  If a named list or a Globals object, the
 globals are used as is.}
 
-\item{packages}{(optional) R packages to load on worker processes}
+\item{packages}{(optional) R packages to load on worker processes.}
 
 \item{envir}{The \link{environment} from where global objects should be
 identified.}
 
 \item{lazy}{logical value, if \code{TRUE} then delay submitting the task
 associated with the future to the associated task queue in Redis until the
-future status is polled or its value is requested}
+future status is polled or its value is requested.}
 
-\item{queue}{Redis key name of the task queue (Redis list)}
+\item{queue}{Redis key name of the task queue (Redis list).}
 
-\item{config}{Redis config}
+\item{config}{Redis config.}
 
 \item{output_queue}{(optional) Redis key name of the work output queue
 (note: reserved for future use).}

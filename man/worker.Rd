@@ -18,7 +18,7 @@ worker(
 
 \item{linger}{in seconds, max time before system checks (including termination).}
 
-\item{config}{Redis configuration (see \code{\link{redis_config}}}
+\item{config}{Redis configuration (see \code{\link{redis_config}})).}
 
 \item{iter}{Maximum number of tasks to acquire before exiting.}
 

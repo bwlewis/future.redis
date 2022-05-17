@@ -7,9 +7,9 @@
 resubmit(future, redis)
 }
 \arguments{
-\item{future}{An object of class RedisFuture}
+\item{future}{An object of class RedisFuture.}
 
-\item{redis}{A redux Redis connection}
+\item{redis}{A redux Redis connection.}
 }
 \value{
 If the number of retries is less than or equal to the maximum number of retries,

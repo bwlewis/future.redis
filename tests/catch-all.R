@@ -19,15 +19,29 @@ if (redux::redis_available()) {
 # alive.c
 # test bogus host/port
 stopifnot(tryCatch({future.redis:::setAlive(0,0,"x")}, error = function(e) TRUE))
+# test auth (expected to fail)
+stopifnot(tryCatch({future.redis:::setAlive(6379L, "127.0.0.1", "x", "auth")}, error = function(e) TRUE))
 # test thread creation fail
 # ???
 
-# worker.R log to file
 if (redux::redis_available()) {
+# worker.R
+# test log to file
   plan(redis)
-  removeQ()
   startLocalWorkers(1, linger=1, log=tempfile())
-  stopifnot(value(future(0L)) == 0L)
-  removeQ()
-}
+  stopifnot(value(future(0L, lazy=FALSE)) == 0L)
 
+# RedisFuture-class.R (already computed globals)
+  l <- list()
+  attributes(l)[["already-done"]] = FALSE
+  g <- future.redis:::RedisFuture(expr = 0L, globals = l, substitute = FALSE,
+         queue = "RJOBS", config = redux::redis_config(),
+         output_queue = NA, max_retries = 1L)
+  # NOTE! substitute = TRUE fails on value below? TO FIX XXX
+  stopifnot(value(g) == 0L)
+  v <- redis(0L, lazy=FALSE)
+  stopifnot(value(v) == 0L)
+  removeQ()
+# null task (we know for sure 'RJOBS' is not in redis from above test removeQ)
+  stopifnot(is.null(future.redis:::processTask("RJOBS", redux::hiredis())))
+}

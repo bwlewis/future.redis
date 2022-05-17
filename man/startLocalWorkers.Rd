@@ -19,7 +19,7 @@ startLocalWorkers(
 
 \item{queue}{Redis task queue name.}
 
-\item{config}{Redis configuration (see \code{\link{redis_config}}}
+\item{config}{Redis configuration (see \code{\link{redis_config}})).}
 
 \item{iter}{Maximum number of tasks to acquire before exiting.}
 

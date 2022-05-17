@@ -234,7 +234,7 @@ ok (void *x)
       m = 0;
     }
   thread_exit ();
-  return NULL;
+  return NULL;    /* Not reachable */
 }
 
 /* OK to call delAlive repeatedly */

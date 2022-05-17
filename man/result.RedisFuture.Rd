@@ -7,9 +7,9 @@
 \method{result}{RedisFuture}(future, ...)
 }
 \arguments{
-\item{future}{an object of class \code{Redis.future}}
+\item{future}{an object of class \code{Redis.future}.}
 
-\item{...}{additional parameters for \code{future} class methods}
+\item{...}{additional parameters for \code{future} class methods.}
 }
 \description{
 Obtain and return a future task result (blocking)
