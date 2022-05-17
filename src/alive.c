@@ -275,6 +275,10 @@ setAlive (SEXP PORT, SEXP HOST, SEXP KEY, SEXP AUTH)
   WSAStartup (MAKEWORD (2, 2), &wsaData);
 #endif
   tcpconnect (&s, host, port);
+  if(s < 0) {
+    error ("Redis communication error");
+    return R_NilValue;
+  }
   go = 1;
   time(&start_time);
 /* check for AUTH and authorize if needed */
@@ -290,9 +294,13 @@ setAlive (SEXP PORT, SEXP HOST, SEXP KEY, SEXP AUTH)
   t = CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) ok, (LPVOID) key, 0,
                     &dw_thread_id);
 #else
-  pthread_create (&t, NULL, &ok, (void *) key);
+  j = pthread_create (&t, NULL, &ok, (void *) key);
+  if(j != 0) {
+    close (s);
+    error ("Error creating POSIX thread");
+  }
 #endif
-  return (R_NilValue);
+  return R_NilValue;
 }
 
 static const R_CallMethodDef CallEntries[] = {
