@@ -18,7 +18,7 @@ quitter <- function() {
   })
 }
 
-if(nchar(Sys.getenv("TEST_FAULT")) > 0) { 
+if(nchar(Sys.getenv("TEST_FAULT")) > 0 && redux::redis_available()) {
   library("future.redis")
   plan(redis, max_retries = 2)
   startLocalWorkers(2, linger = 1)

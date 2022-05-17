@@ -7,7 +7,7 @@
 #' communication or other error occurs; after which the worker exits (quits R).
 #' @param queue Redis task queue name.
 #' @param linger in seconds, max time before system checks (including termination).
-#' @param config Redis configuration (see \code{\link{redis_config}}
+#' @param config Redis configuration (see \code{\link{redis_config}})).
 #' @param iter Maximum number of tasks to acquire before exiting.
 #' @param quit if TRUE, quit R on exit.
 #' @param log divert stdout and messages to log file.
@@ -55,8 +55,8 @@ worker <- function(queue = "RJOBS",
 }
 
 #' Process a task
-#' @param task A Redis key containing the future to process
-#' @param redis A hiredis connection
+#' @param task A Redis key containing the future to process.
+#' @param redis A hiredis connection.
 #' @importFrom redux redis_multi
 #' @importFrom future getExpression
 #' @keywords internal

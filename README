@@ -2,9 +2,9 @@ future.redis: An elastic backend for the future package using Redis.
 
 Description
 
-The future package defines very simple and uniform way of evaluating R
+The future package defines a simple and uniform way of evaluating R
 expressions asynchronously. Future "backend" packages implement asynchronous
-processing over concurrent shared-memory and distributed systems.
+processing over various shared-memory and distributed systems.
 
 Redis is a fast networked key/value database that includes a stack-like data
 structure (Redis "lists").  This feature makes Redis useful as a lightweight

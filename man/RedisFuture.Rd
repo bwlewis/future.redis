@@ -48,7 +48,7 @@ future status is polled or its value is requested}
 \item{output_queue}{(optional) Redis key name of the work output queue
 (note: reserved for future use).}
 
-\item{max_retries}{Maximum number of times the future can be submitted
+\item{max_retries}{Maximum number of times the future can be re-submitted
 to the task queue in the event of failure.}
 
 \item{...}{Additional named elements of the future.}

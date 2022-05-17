@@ -11,15 +11,15 @@
 #' globals are identified by lookup based their names `globals` searching
 #' from environment `envir`.  If a named list or a Globals object, the
 #' globals are used as is.
-#' @param packages (optional) R packages to load on worker processes
+#' @param packages (optional) R packages to load on worker processes.
 #' @param lazy logical value, if \code{TRUE} then delay submitting the task
 #' associated with the future to the associated task queue in Redis until the
-#' future status is polled or its value is requested
-#' @param config Redis config
-#' @param queue Redis key name of the task queue (Redis list)
+#' future status is polled or its value is requested.
+#' @param config Redis config.
+#' @param queue Redis key name of the task queue (Redis list).
 #' @param output_queue (optional) Redis key name of the work output queue
 #'        (note: reserved for future use).
-#' @param max_retries Maximum number of times the future can be submitted
+#' @param max_retries Maximum number of times the future can be re-submitted
 #'        to the task queue in the event of failure.
 #' @return An object of class `RedisFuture`.
 #' @keywords internal
@@ -38,9 +38,9 @@ RedisFuture <- function(expr = NULL,
                         max_retries = 3,
                         ...)
 {
-  if (substitute) expr <- substitute(expr)
+  if(isTRUE(substitute)) expr <- substitute(expr)
   ## Record globals
-  if (!isTRUE(attr(globals, "already-done", exact = TRUE))) {
+  if(!isTRUE(attr(globals, "already-done", exact = TRUE))) {
     gp <- getGlobalsAndPackages(expr, envir = envir, persistent = FALSE, globals = globals)
     globals <- gp[["globals"]]
     packages <- c(packages, gp[["packages"]])
@@ -99,8 +99,8 @@ resolved.RedisFuture <- function(x, ...) {
 
 
 #' Re-submit a future to the task queue
-#' @param future An object of class RedisFuture
-#' @param redis A redux Redis connection
+#' @param future An object of class RedisFuture.
+#' @param redis A redux Redis connection.
 #' @importFrom redux redis_multi
 #' @importFrom future FutureResult
 #' @return If the number of retries is less than or equal to the maximum number of retries,
@@ -136,8 +136,8 @@ resubmit <- function(future, redis) {
 }
 
 #' Submit the future to the task queue
-#' @param future an object of class \code{Redis.future}
-#' @param ... additional parameters for \code{future} class methods
+#' @param future an object of class \code{Redis.future}.
+#' @param ... additional parameters for \code{future} class methods.
 #' @importFrom digest digest
 #' @importFrom redux hiredis
 #' @importFrom future run
@@ -163,8 +163,8 @@ run.RedisFuture <- function(future, ...) {
 }
 
 #' Obtain and return a future task result (blocking)
-#' @param future an object of class \code{Redis.future}
-#' @param ... additional parameters for \code{future} class methods
+#' @param future an object of class \code{Redis.future}.
+#' @param ... additional parameters for \code{future} class methods.
 #' @importFrom future result
 #' @export
 result.RedisFuture <- function(future, ...) {

@@ -1,0 +1,330 @@
+% \VignetteIndexEntry{future.redis Manual}
+% \VignetteDepends{future.redis}
+% \VignettePackage{future.redis}
+\documentclass[10pt]{article}
+\usepackage[pdftex]{graphicx}
+\usepackage{Sweave}
+\usepackage{hyperref}
+
+\title{Elastic computing with R and Redis}
+\author{Bryan W. Lewis \\ 
+blewis@illposed.net}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+\vspace{-1.8in}\hspace{-2.1in}\resizebox{0.45\textwidth}{!}{\rotatebox{0}{\includegraphics{elastic}}}
+
+\section{Introduction}
+
+The future package\cite{future} defines a simple and uniform way of evaluating
+R expressions asynchronously. Future ``backend'' packages implement
+asynchronous processing over various distributed and shared-memory
+systems.
+
+Redis\cite{redis} is a fast networked key/value database that includes a
+stack-like data structure (Redis ``lists'').  This feature makes Redis useful
+as a lightweight task queue manager.
+
+The future.redis package defines a simple elastic distributed computing
+backend for future using the redux package\cite{redux} to communicate with Redis.
+This style of distributed computing is well-suited to modern cloud
+environments, and especially cloud spot markets.
+Key features of future.redis are:
+
+\begin{itemize}
+
+\item future.redis allows for dynamic pools of workers. New workers may be
+added at any time, even in the middle of running computations.  This feature is
+geared for modern cloud computing environments, including spot compute markets.
+
+\item future.redis computations are partially fault tolerant. Failure of
+worker R processes, for instance due to spot instance termination,
+are detected and affected tasks are automatically re-submitted.
+
+\item future.redis makes it particularly easy to run parallel jobs across
+different operating systems. It works equally well on GNU/Linux, Mac OS X, and
+Windows systems.  Back end parallel R worker processes are effectively
+anonymous--they may run anywhere as long as all the R package dependencies
+required by the task at hand are available.
+
+\end{itemize}
+
+
+This vignette refers the following application processes:
+a Redis server;
+a {\it manager} R process -- this is the R process that submits futures
+to be processed;
+zero or more {\it worker} R processes -- these are the R processes that
+run the futures and return results.
+
+Each of the above processes may run on different computers communicating through
+Redis over a network. Or, they may all run on the same computer and communicate
+through Redis over a local network.
+
+Note that the number of backend workers can be {\it zero}. In such cases, the
+manager R process can submit tasks, but if it requests results it will block
+until workers become available to complete the work (or until a user cancels
+the operation with CTRL + C or similar signal).
+
+
+\section{Obtaining and Configuring a Redis server}\label{install}
+
+Redis is an extremely popular open-source networked key/value database, and
+operating system-specific packages are available for all major operating
+systems, including Windows.
+For more information see: {\tt{https://redis.io/download}}.
+
+The Redis server is completely configured by the file \verb+redis.conf+.  It's
+important to make sure that the \verb+timeout+ setting is set to \verb+0+ in
+the \verb+redis.conf+ file when using future.redis.  You may wish to peruse the
+rest of the configuration file and experiment with the other server settings.
+In particular if you plan to communicate with Redis over more than one computer
+make sure that it's configured to listen on all appropriate network
+interfaces--and if those computers are on an untrusted network work carefully
+to secure their communication and to prohibit outside access to the Redis
+server!
+
+
+\section{Getting started}
+
+These notes refer to your interactive R session as the {\it manager} R process.
+Install the future.redis package along with those packages it depends on in R
+the usual way with \verb+install.packages("future.redis")+.
+
+Once installed, register the future.redis backend in your interactive R session
+with:
+\begin{verbatim}
+library("future.redis")
+plan(redis)
+\end{verbatim}
+The ``redis'' plan is a function that takes a number of optional arguments,
+including the name of a task work queue to set up in Redis. The default
+task queue name is ``RJOBS''. Additional Redis server communication parameters
+and other options can be set there, see \verb+?plan+ for help.
+
+\subsection*{Starting local workers}
+
+In order to actually process computation, you need to start at least one {\it
+worker} R process to pull tasks from the work queue, run the tasks, and return
+results. The following example illustrates a convenient way to start R workers
+on the local computer:
+\begin{verbatim}
+startLocalWorkers(n = 2, linger = 1, log = "/dev/null")
+\end{verbatim}
+The \verb+linger+ option controls how quickly the workers quit once the task
+queue is removed, in this case after approximately one second. A short linger
+interval is useful for interactive examples and quick clean-up.
+The \verb+log+ option controls where the workers print R messages during
+their operation. This can be a file (local to the workers) for logging and
+debugging purposes. If unspecified, workers display messages on their
+stderr and stdout streams, which will show up interleaved with the manager
+R process streams (also useful for simple debugging). We'll see an example
+of that later.
+
+
+\subsection*{Run an example!}
+
+At last, let's run a really simple example. It simply returns the process
+ID of each worker R process:
+\begin{verbatim}
+Map(value, replicate(2, future(Sys.getpid())))
+
+# [[1]]
+# [1] 27859
+#
+# [[2]]
+# [1] 27857
+\end{verbatim}
+If all goes well, you should see distinct numbers (illustrated in 
+comment section above) indicating that the workers are indeed running
+in separate system processes.
+
+Finally, to signal to the workers to quit and clean up the work queue
+completely from Redis, use:
+\begin{verbatim}
+removeQ()
+\end{verbatim}
+After the \verb+linger+ interval, each worker will discover that the
+work queue has been removed and exit.
+
+
+\subsection*{Again, with messages}
+
+Let's run the previous example again but this time without suppressing stderr
+and stdout message streams in the workers. This produces messy, but useful for
+quick debugging, output:
+
+\begin{verbatim}
+startLocalWorkers(n = 2, linger = 1)
+Map(value, replicate(2, future(Sys.getpid())))
+
+# Retrieved task a3e078e331e83a5f78b2a3a7a067
+# Retrieved task c85df7199ce2bcfcb4fc7d1090e2
+# Obtained future RJOBS.a3e078e331e83a5f78b2a3a7a067...
+# Obtained future RJOBS.c85df7199ce2bcfcb4fc7d1090e2...
+# Submitting result to RJOBS.c85df7199ce2bcfcb4fc7d1090e2.out...
+# Submitting result to RJOBS.a3e078e331e83a5f78b2a3a7a067.out...
+# [[1]]
+# [1] 28470
+#
+# [[2]]
+# [1] 28472
+
+removeQ()
+
+# Normal worker shutdown
+# Normal worker shutdown
+\end{verbatim}
+
+The above messages are truncated for clarity. Your results will look a
+little different, but the idea is the same.
+
+You can, of course, also start R workers on other computers, as long as they
+have R and the future.redis package installed and a way to communicate with
+Redis over a (secured) network. See \verb+?worker+ and the vignettes for
+running future.redis on AWS for examples.
+
+
+
+\section{Technical Details}
+
+This section outlines a few technical details. Generally, this section
+assumes that Redis is configured and available and that the task queue
+is named ``RJOBS''.
+
+Sequences of messages between R and Redis are usually coalesced into
+transactions.  Blocking communication with Redis, whenever it occurs, is
+rate-limited to allow for R session signal interrupt processing since the redux
+Redis communication package functions are uninterruptible. (The upshot is that
+the package will perform poorly with lots of very short parallel tasks--use a
+different approach for that kind of computation.)
+
+Each future defined by a manager R process is serialized and associated with a
+``task'' in a Redis-maintained task queue.  The gist of operation is outlined
+in Figure \ref{gist}.
+\begin{figure}[!ht]
+\begin{center}
+\resizebox{0.49\textwidth}{!}{\rotatebox{0}{\includegraphics{enqueue}}}
+\resizebox{0.49\textwidth}{!}{\rotatebox{0}{\includegraphics{result}}}
+\end{center}
+\caption{Adding tasks to a task queue named RJOBS (left) and retrieving results (right).}
+\label{gist}
+\end{figure}
+Futures are dispatched via a shared task queue (``RJOBS'' for instance).
+The result of each future appears in Redis in a distinct result output queue.
+Tasks associated with futures are internally named by the package with unique
+IDs.
+
+
+\subsection*{Redis Key Organization}
+
+The future.redis package uses a number of keys to coordinate computation and
+fault detection. All keys are prefixed by the task queue name defined by the
+manager R process. A brief description of typical
+keys follows for a task queue named ``RJOBS'', using numbers as unique task
+IDs for clarity.
+
+\subsubsection*{Queue-global keys}
+\begin{itemize}
+\item[] {\bf RJOBS}: The task first-in-first-out queue, a Redis "list" value type. The manager R process places task IDs to run in this queue. Worker R processes pull tasks IDs to run from this queue.
+\item[] {\bf RJOBS.live}:  Existence of this key is a hint to the system that the RJOBS queue is in use. Removal of this key using 'removeQ()' or otherwise is a signal to worker R processes listening for work on the RJOBS queue to exit.
+\end{itemize}
+
+\subsubsection*{Per-task keys}
+\begin{itemize}
+\item[] {\bf RJOBS.001}:  The value of this redis key is the serialized future associated with task 001. This key is removed once the manager R process retrieves the completed future.
+\item[] {\bf RJOBS.001.status}:  A character-valued key with information about the current state of this task, including terms ``submitted'', ``running'', and ``finished''. This key is removed once the manager R process retrieves the completed future.
+\item[] {\bf RJOBS.001.live}:  Existence of this key indicates that a worker process has pulled the task from the queue and is currently processing it. This is an ephemeral Redis key with a short timeout. Its existence is assured by a thread on the worker R process. If the worker R process crashes, or loses connection with Redis, then RJOBS.001.live will expire and be deleted. If the manager R process observes the inconsistent state of RJOBS.001.status == ``running'' but non-existence of RJOBS.001.live, then the task is assumed failed and possibly re-submitted.
+\item[] {\bf RJOBS.001.out}: The task output queue (a Redis list). The manager R process blocks on this queue waiting for work output, with periodic timeouts to check for problems.
+\end{itemize}
+
+Use the \verb+removeQ()+ function to delete all keys in Redis associated with a
+specified task queue, for instance after manually cancelling an operation with
+CTRL+C or similar as a cleanup step. Note that \verb+removeQ()+ requests
+that R worker processes listening to the queue exit.
+
+
+\subsection*{Worker Fault Detection and Recovery}
+
+Elastic computation goes two ways: we can expand the worker pool at any time,
+even during running computations. But we can also {\it contract} the worker
+pool at any time, even in the middle of running computations.  The latter case
+requires a way to re-schedule tasks interrupted by workers that stop for any
+reason.
+
+The future.redis package uses a few simple mechanisms baked into Redis to
+detect and handle such faults.
+
+\subsubsection*{Task liveness and status key symmetry}
+
+When a worker pulls a task for processing from the queue, it sets up two keys
+in Redis:
+\begin{enumerate}
+\item a task status key: \verb+QUEUE_ID.TASK_ID.status+ that is set to ``running'',
+\item an ephemeral task liveness key: \verb+QUEUE_ID.TASK_ID.live+.
+\end{enumerate}
+Setting of these keys happens in a single Redis transaction (from the point of
+view of the manager R process, these two keys are set up in one atomic
+operation).  ``Ephemeral'' means that the liveness key is set to expire after
+a short interval.
+
+Then the worker R process starts a thread running to maintain the state of
+the liveness key by periodically extending its expiration interval a short
+while. Task liveness is maintained in a (very limited) thread so that the
+worker R process can independently go about its business of processing the task.
+
+If the worker R process crashes, or if it is externally terminated by a scheduling
+system (like the AWS spot market), or if it somehow loses network communication
+with Redis for an interval longer than the task liveness key expiration interval,
+then the liveness key disappears in Redis (handled for us by the Redis server).
+
+Now, back on the manager R process, when either the \verb+result+ or
+\verb+resolved+ methods of the future associated with the task are invoked,
+the manager R process checks for symmetry between these keys. In
+particular, if the task status key says ``running'' and the task liveness key
+does not exist (because it has expired), then the manager assumes that the
+worker is gone and re-submits the task...
+
+\subsubsection*{Task re-submission}
+
+Task re-submission is nearly identical to a repeat of task creation with one
+important exception: the number of re-submissions is bounded by a parameter in
+the \verb+redis+ future plan function. See \verb+?redis+ for information on the
+\verb+max_retries+ parameter. If the number of task re-submissions exceeds that
+entry, then the task is declared failed, set to an error condition, removed
+from the queue and marked finished.  See the \verb+fault.r+ file in the
+tests section for examples of worker fault-tolerance testing.
+
+
+\subsubsection*{Lazarus workers}
+
+It's possible that a task liveness key expires due to a network interruption
+between the worker and the Redis server. Network problems are common in
+distributed systems. In such cases the worker continues to process its task.
+When the worker R process re-establishes communication with Redis it first
+checks the \verb+QUEUE_ID.TASK_ID.status+ key to see if the task ID is still
+valid. For instance, the manager R process may have detected its absence and
+rescheduled the task and it's already been completed by some other worker. In
+that case the (now surplus) computed task result is discarded by the worker.
+Otherwise, the worker simply registers the result normally and marks\break
+\verb+QUEUE_ID.TASK_ID.status = "finished"+.
+
+\subsection*{Manager Fault Detection and Recovery}
+
+This feature is not yet implemented. Currently, an interruption in
+communication between the Redis server and the manager R process causes the
+manager to stop with an error. Future versions of the package will attempt
+to recover in this case.
+
+
+\begin{thebibliography}{99}
+\bibitem{future} \url{https://cran.r-project.org/package=future}
+\bibitem{redis} \url{https://redis.io}
+\bibitem{redux} \url{https://cran.r-project.org/package=redux}
+\end{thebibliography}
+
+
+
+\end{document}
