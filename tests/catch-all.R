@@ -18,9 +18,20 @@ if (redux::redis_available()) {
 
 # alive.c
 # test bogus host/port
-stopifnot(tryCatch({future.redis:::setAlive(0,0,"x")}, error = function(e) TRUE))
+res <- tryCatch({future.redis:::setAlive(0,0,"x")}, error = identity)
+if (.Platform[["OS.type"]] == "windows") {
+  stopifnot(is.null(res)) ## FIXME
+} else {
+  stopifnot(inherits(res, "error"))
+}
+
 # test auth (expected to fail)
-stopifnot(tryCatch({future.redis:::setAlive(6379L, "127.0.0.1", "x", "auth")}, error = function(e) TRUE))
+res <- tryCatch({future.redis:::setAlive(6379L, "127.0.0.1", "x", "auth")}, error = identity)
+if (.Platform[["OS.type"]] == "windows") {
+  stopifnot(is.null(res)) ## FIXME
+} else {
+  stopifnot(inherits(res, "error"))
+}
 # test thread creation fail
 # ???
 

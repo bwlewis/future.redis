@@ -12,10 +12,14 @@ queues for elastic distributed computing.
 }
 \examples{
 \donttest{
+if (redux::redis_available()) {
+## The example assumes that a Redis server is running on the local host
+## and standard port.
 plan(redis)
 startLocalWorkers(2, linger=1)
 demo("mandelbrot", package = "future", ask = FALSE)
 removeQ()
+}
 }
 
 }
