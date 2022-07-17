@@ -36,11 +36,11 @@ worker <- function(queue = "RJOBS",
     # Set task queue liveness key
     live <- sprintf("%s.live", queue)
     hi[["SET"]](key = live, value = "")
-    if(interactive()) message("Waiting for doRedis jobs.")
+    mdebug("Waiting for doRedis jobs.")
     while(isTRUE(N < iter)) {
       taskid <- hi[["BRPOP"]](queue, timeout = linger)[[2]]
       if(!is.null(taskid)) {
-        message("Retrieved task ", taskid)
+        mdebugf("Retrieved task %s", taskid)
         N <- N + 1
         processTask(sprintf("%s.%s", queue, taskid), hi)
       }
@@ -49,8 +49,8 @@ worker <- function(queue = "RJOBS",
         stop("Normal worker shutdown")
       }
     }
-  }, error = function(e) message(e))
-  message(msg)
+  }, error = function(e) conditionMessage(e))
+  mdebug(msg)
 }
 
 #' Process a task
@@ -65,7 +65,7 @@ processTask <- function(task, redis)
   t_start <- Sys.time()
   future <- tryCatch(uncerealize(redis[["GET"]](key = task)), error = function(e) NULL)
   if(is.null(future)) return()
-  message("Obtained future ", task, " ", t_start)
+  mdebug("Obtained future ", task, " ", t_start)
 
   # Set ephemeral task liveness key
   alive <- sprintf("%s.%s.live", future[["queue"]], future[["taskid"]])
@@ -91,7 +91,7 @@ processTask <- function(task, redis)
   # Submit result if task status key exists, otherwise discard
   status <- sprintf("%s.%s.status", future[["queue"]], future[["taskid"]])
   if(redis[["EXISTS"]](status)) {
-    message("Submitting result to ", future[["output_queue"]], " ", ans[["finished"]])
+    mdebugf("Submitting result to %s %s", future[["output_queue"]], ans[["finished"]])
     redis[["LPUSH"]](key = future[["output_queue"]], serialize(ans, NULL))
     redis[["SET"]](key = status, value = "finished")
   }
