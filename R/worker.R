@@ -11,9 +11,9 @@
 #' @param iter Maximum number of tasks to acquire before exiting.
 #' @param quit if TRUE, quit R on exit.
 #' @param log divert stdout and messages to log file.
-#' @importFrom redux redis_config hiredis
 #' @return After conclusion of the worker loop, either R exits or NULL
 #' is silently returned.
+#' @importFrom redux redis_config hiredis
 #' @export
 worker <- function(queue = "RJOBS",
                    linger = 10,
@@ -56,9 +56,8 @@ worker <- function(queue = "RJOBS",
 #' Process a task
 #' @param task A Redis key containing the future to process.
 #' @param redis A hiredis connection.
-#' @importFrom redux redis_multi
-#' @importFrom future getExpression
 #' @keywords internal
+#' @importFrom future getExpression
 processTask <- function(task, redis)
 {
   on.exit(delAlive())
@@ -112,8 +111,6 @@ processTask <- function(task, redis)
 #' @inheritParams worker
 #' @param n number of workers to start.
 #' @param Rbin full path to the command-line R program.
-#' @importFrom redux redis_config hiredis
-#' @importFrom base64enc base64encode
 #' @return NULL is invisibly returned.
 #' @seealso \code{\link{redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
 #' @examples
@@ -142,11 +139,20 @@ processTask <- function(task, redis)
 #' # Clean up
 #' removeQ("R jobs")
 #' }
+#'
+#' @importFrom redux redis_config
+#' @importFrom base64enc base64encode
 #' @export
 startLocalWorkers <- function(n, queue = "RJOBS",
   config = redis_config(), iter = Inf, linger = 10, log = NULL,
   Rbin = paste(R.home(component = "bin"), "R", sep="/"))
 {
+  stopifnot(
+    length(n) == 1L, !is.na(n), is.numeric(n), n >= 1,
+    length(iter) == 1L, !is.na(iter), is.numeric(iter), iter >= 1,
+    length(linger) == 1L, !is.na(linger), is.numeric(linger), linger >= 1
+  )
+  
   args <- list(queue = queue, linger = linger, config = config,
                iter = iter, quit = TRUE, log = log)
   cmd <- sprintf("-s --no-save -e \"suppressMessages(require(future.redis, quietly = TRUE)); args <- unserialize(base64enc::base64decode('%s')); do.call('worker', args)\"", base64encode(serialize(args, NULL)))

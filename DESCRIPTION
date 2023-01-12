@@ -8,6 +8,6 @@ Title: An Elastic Distributed Computing Backend for the Future Package
 Authors@R: c(person("Bryan", "Lewis", role=c("aut", "cre", "cph"), email = "blewis@illposed.net"))
 Description: A future API implementation using the Redis key/value database to define partially fault-tolerant task queues for elastic distributed computing.
 License: LGPL (>= 2.1)
-Imports: redux, digest, base64enc
+Imports: redux, digest, base64enc, utils
 LazyLoad: TRUE
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3

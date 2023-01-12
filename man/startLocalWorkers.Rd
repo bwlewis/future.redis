@@ -68,6 +68,7 @@ Reduce(sum, Map(value, replicate(M, f()))) / M
 # Clean up
 removeQ("R jobs")
 }
+
 }
 \seealso{
 \code{\link{redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
