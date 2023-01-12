@@ -76,3 +76,20 @@ uncerealize <- function(x)
 {
   invisible(.Call(C_delAlive, PACKAGE="future.redis"))
 }
+
+
+now <- function(x = Sys.time(), format = "[%H:%M:%OS3] ") {
+  ## format(x, format = format) ## slower
+  format(as.POSIXlt(x, tz = ""), format = format)
+}
+
+mdebug <- function(..., prefix = now(), debug = getOption("future.debug", FALSE)) {
+  if (!debug) return()
+  message(prefix, ...)
+}
+
+mdebugf <- function(..., appendLF = TRUE,
+                    prefix = now(), debug = getOption("future.debug", FALSE)) {
+  if (!debug) return()
+  message(prefix, sprintf(...), appendLF = appendLF)
+}
