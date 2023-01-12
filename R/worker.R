@@ -29,16 +29,19 @@ worker <- function(queue = "RJOBS",
                    config = redis_config(),
                    iter = Inf,
                    quit = FALSE,
-                   log = NULL)
+                   log = nullfile())
 {
   if(quit) {
     on.exit(quit(save = "no"))
   }
-  
+
   if(isTRUE(is.character(log)) && isTRUE(nchar(log) > 0)) {
+    if (tolower(log) %in% c("/dev/null", "nil:")) log <- nullfile()
     f <- file(log, open = "w+")
-    sink(f, append = TRUE, type = "message")
+    sink(f, append = TRUE)                   ## stdout
+    sink(f, append = TRUE, type = "message") ## stderr
     on.exit({
+      sink()
       sink(type = "message")
       close(f)
     }, add = TRUE)

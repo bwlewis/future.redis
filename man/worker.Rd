@@ -10,7 +10,7 @@ worker(
   config = redis_config(),
   iter = Inf,
   quit = FALSE,
-  log = NULL
+  log = nullfile()
 )
 }
 \arguments{
