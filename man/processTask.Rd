@@ -9,7 +9,8 @@ processTask(task, redis)
 \arguments{
 \item{task}{A Redis key containing the future to process.}
 
-\item{redis}{A hiredis connection.}
+\item{redis}{A \link[redux:redis_api]{redux::redis_api} object as returned by \code{\link[redux:hiredis]{redux::hiredis()}}
+connection.}
 }
 \description{
 Process a task

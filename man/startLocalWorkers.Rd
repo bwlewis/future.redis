@@ -19,11 +19,12 @@ startLocalWorkers(
 
 \item{queue}{Redis task queue name.}
 
-\item{config}{Redis configuration (see \code{\link{redis_config}})).}
+\item{config}{A \link[redux:redis_config]{redux::redis_config} Redis configuration object.}
 
 \item{iter}{Maximum number of tasks to acquire before exiting.}
 
-\item{linger}{in seconds, max time before system checks (including termination).}
+\item{linger}{in seconds, max time before system checks (including
+termination).}
 
 \item{log}{divert stdout and messages to log file.}
 
@@ -33,13 +34,13 @@ startLocalWorkers(
 NULL is invisibly returned.
 }
 \description{
-Use \code{startLocalWorkers} to start one or more future.redis R worker
+Use \code{startLocalWorkers()} to start one or more \strong{future.redis} R worker
 processes in the background. The worker processes are started on the local
-system using the \code{\link{worker}} function.
+system using the \code{\link[=worker]{worker()}} function.
 }
 \details{
 Running workers self-terminate after a \code{linger} interval if their task
-queue is deleted with the \code{removeQ} function, or if network
+queue is deleted with the \code{\link[=removeQ]{removeQ()}} function, or if network
 communication with the Redis server encounters an error.
 }
 \examples{
@@ -51,11 +52,11 @@ if (redux::redis_available()) {
 plan(redis, queue = "R jobs")
 
 # Start some local R worker processes:
-startLocalWorkers(n=2, queue="R jobs", linger=1)
+startLocalWorkers(n=2, queue="R jobs", linger=1.0)
 
 # Alternatively, use the following to run the workers quietly without
 # showing their output as they run:
-# startLocalWorkers(n=2, queue="R jobs", linger=1, log="/dev/null")
+# startLocalWorkers(n=2, queue="R jobs", linger=1.0, log="/dev/null")
 
 # A function that returns a future (note the scope of N)
 f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
@@ -63,7 +64,8 @@ f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
 # Run a simple sampling approximation of pi in parallel using  M * N points:
 N <- 1e6  # samples per worker
 M <- 10   # iterations
-Reduce(sum, Map(value, replicate(M, f()))) / M
+pi_est <- Reduce(sum, Map(value, replicate(M, f()))) / M
+print(pi_est)
 
 # Clean up
 removeQ("R jobs")
@@ -71,5 +73,5 @@ removeQ("R jobs")
 
 }
 \seealso{
-\code{\link{redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
+\code{\link[redux:redis_config]{redux::redis_config()}}, \code{\link[=worker]{worker()}}, \code{\link[=removeQ]{removeQ()}}
 }

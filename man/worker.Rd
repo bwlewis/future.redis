@@ -16,9 +16,10 @@ worker(
 \arguments{
 \item{queue}{Redis task queue name.}
 
-\item{linger}{in seconds, max time before system checks (including termination).}
+\item{linger}{in seconds, max time before system checks (including
+termination).}
 
-\item{config}{Redis configuration (see \code{\link{redis_config}})).}
+\item{config}{A \link[redux:redis_config]{redux::redis_config} Redis configuration object.}
 
 \item{iter}{Maximum number of tasks to acquire before exiting.}
 
@@ -33,7 +34,7 @@ is silently returned.
 \description{
 The worker process blocks for tasks on the specified queue (a Redis list).
 The worker continues to process tasks from the queue untile the queue
-liveness key is removed (see \code{\link{removeQ}}), the number of
+liveness key is removed (see \code{\link[=removeQ]{removeQ()}}), the number of
 processed tasks reaches the \code{iter} limit, or until a Redis
 communication or other error occurs; after which the worker exits (quits R).
 }

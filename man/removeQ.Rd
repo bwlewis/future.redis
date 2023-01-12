@@ -9,7 +9,7 @@ removeQ(queue = "RJOBS", config = redis_config())
 \arguments{
 \item{queue}{Redis key name of the task queue (Redis list)}
 
-\item{config}{Redis config}
+\item{config}{A \link[redux:redis_config]{redux::redis_config} Redis configuration object.}
 }
 \value{
 NULL is silently returned (this function is evaluated for the
@@ -17,5 +17,5 @@ side-effect of altering Redis state).
 }
 \description{
 Redis keys beginning with the \code{queue} name are removed.
-Removing the work queue signlas to local and remote R workers to exit.
+Removing the work queue signals to local and remote R workers to exit.
 }

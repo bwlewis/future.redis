@@ -8,10 +8,11 @@ delAlive()
 }
 \value{
 Invoked for the side-effect of ending a maintenance thread for
- a task liveness key, \code{NULL} is invisibly returned.
+a task liveness key, \code{NULL} is invisibly returned.
 }
 \description{
-setAlive and delAlive support worker fault tolerance and are only to be
-use internally by the package. It's safe to call delAlive multiple times.
+\code{setAlive()} and \code{delAlive()} support worker fault tolerance and are
+only to be use internally by the package. It's safe to call \code{delAlive()}
+multiple times.
 }
 \keyword{internal}

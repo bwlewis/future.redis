@@ -20,8 +20,8 @@ Invoked for the side-effect of maintaining a task liveness
 key, \code{NULL} is invisibly returned.
 }
 \description{
-setAlive and delAlive support worker fault tolerance and are only to be
-use internally by the package. It's safe to call setAlive and delAlive
-multiple times; at most one copy of the liveness thread is run.
+\code{setAlive()} and \code{delAlive()} support worker fault tolerance and are only
+to be use internally by the package. It's safe to call \code{setAlive()} and
+\code{delAlive()} multiple times; at most one copy of the liveness thread is run.
 }
 \keyword{internal}

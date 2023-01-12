@@ -6,47 +6,38 @@
 \usage{
 redis(
   expr,
-  envir = parent.frame(),
   substitute = TRUE,
-  globals = TRUE,
+  envir = parent.frame(),
+  ...,
   queue = "RJOBS",
   config = redis_config(),
   output_queue = NA,
-  max_retries = 3,
-  ...
+  max_retries = 3L
 )
 }
 \arguments{
 \item{expr}{An \R \link[base]{expression}.}
 
-\item{envir}{The \link{environment} from where global objects should be
-identified.}
-
 \item{substitute}{If TRUE, argument \code{expr} is
 \code{\link[base]{substitute}()}:ed, otherwise not.}
 
-\item{globals}{(optional) a logical, a character vector, a named list, or
-a [globals::Globals] object.  If `TRUE`, globals are identified by code
-inspection based on `expr` and `tweak` searching from environment
-`envir`.  If `FALSE`, no globals are used.  If a character vector, then
-globals are identified by lookup based their names `globals` searching
-from environment `envir`.  If a named list or a Globals object, the
-globals are used as is.}
+\item{envir}{The \link{environment} from where global objects should be
+identified.}
+
+\item{...}{Additional named elements of the future.}
 
 \item{queue}{Redis key name of the task queue (Redis list).}
 
-\item{config}{Redis config.}
+\item{config}{A \link[redux:redis_config]{redux::redis_config} Redis configuration object.}
 
 \item{output_queue}{(optional) Redis key name of the work output queue
 (note: reserved for future use).}
 
 \item{max_retries}{Maximum number of times the future can be re-submitted
 to the task queue in the event of failure.}
-
-\item{...}{Additional named elements of the future.}
 }
 \value{
-An object of class [RedisFuture].
+An object of class \link{RedisFuture}.
 }
 \description{
 Use the Redis key/value database to define partially fault-tolerant,
@@ -73,12 +64,14 @@ f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
 # Run a simple sampling approximation of pi in parallel using  M * N points:
 N <- 1e6  # samples per worker
 M <- 10   # iterations
-Reduce(sum, Map(value, replicate(M, f()))) / M
+pi_est <- Reduce(sum, Map(value, replicate(M, f()))) / M
+print(pi_est)
 
 # Clean up
 removeQ("R jobs")
 }
+
 }
 \seealso{
-\code{\link{redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
+\code{\link[redux:redis_config]{redux::redis_config()}}, \code{\link[=worker]{worker()}}, \code{\link[=removeQ]{removeQ()}}
 }

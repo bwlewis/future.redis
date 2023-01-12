@@ -46,35 +46,45 @@ uncerealize <- function(x)
 
 #' Start a task liveness thread
 #'
-#' setAlive and delAlive support worker fault tolerance and are only to be
-#' use internally by the package. It's safe to call setAlive and delAlive
-#' multiple times; at most one copy of the liveness thread is run.
+#' `setAlive()` and `delAlive()` support worker fault tolerance and are only
+#' to be use internally by the package. It's safe to call `setAlive()` and
+#' `delAlive()` multiple times; at most one copy of the liveness thread is run.
+#'
 #' @param port Redis port
+#'
 #' @param host Redis host name
+#'
 #' @param key The task liveness key to maintain
+#'
 #' @param password (optional) Redis password
+#'
 #' @return Invoked for the side-effect of maintaining a task liveness
-#' key, \code{NULL} is invisibly returned.
+#' key, `NULL` is invisibly returned.
+#'
 #' @keywords internal
-`setAlive` <- function(port, host, key, password)
+setAlive <- function(port, host, key, password)
 {
   if(missing(password)) password <- ""
   if(is.null(password)) password <- ""
   invisible(
     .Call(C_setAlive, as.integer(port), as.character(host),
-        as.character(key), as.character(password), PACKAGE = "future.redis"))
+        as.character(key), as.character(password), PACKAGE = .packageName))
 }
+
 
 #' End a task liveness thread
 #'
-#' setAlive and delAlive support worker fault tolerance and are only to be
-#' use internally by the package. It's safe to call delAlive multiple times.
+#' `setAlive()` and `delAlive()` support worker fault tolerance and are
+#' only to be use internally by the package. It's safe to call `delAlive()`
+#' multiple times.
+#'
 #' @return Invoked for the side-effect of ending a maintenance thread for
-#'  a task liveness key, \code{NULL} is invisibly returned.
+#' a task liveness key, `NULL` is invisibly returned.
+#'
 #' @keywords internal
-`delAlive` <- function()
+delAlive <- function()
 {
-  invisible(.Call(C_delAlive, PACKAGE="future.redis"))
+  invisible(.Call(C_delAlive, PACKAGE = .packageName))
 }
 
 

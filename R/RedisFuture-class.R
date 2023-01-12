@@ -3,39 +3,33 @@
 #' Set up the future parameters.
 #'
 #' @inheritParams future::`Future-class`
-#' @param queue Redis task queue
-#' @param globals (optional) a logical, a character vector, a named list, or
-#' a [globals::Globals] object.  If `TRUE`, globals are identified by code
-#' inspection based on `expr` and `tweak` searching from environment
-#' `envir`.  If `FALSE`, no globals are used.  If a character vector, then
-#' globals are identified by lookup based their names `globals` searching
-#' from environment `envir`.  If a named list or a Globals object, the
-#' globals are used as is.
-#' @param packages (optional) R packages to load on worker processes.
-#' @param lazy logical value, if \code{TRUE} then delay submitting the task
-#' associated with the future to the associated task queue in Redis until the
-#' future status is polled or its value is requested.
-#' @param config Redis config.
+#'
+#' @param config A [redux::redis_config] Redis configuration object.
+#'
 #' @param queue Redis key name of the task queue (Redis list).
+#'
 #' @param output_queue (optional) Redis key name of the work output queue
 #'        (note: reserved for future use).
+#'
 #' @param max_retries Maximum number of times the future can be re-submitted
 #'        to the task queue in the event of failure.
+#'
 #' @return An object of class `RedisFuture`.
+#'
 #' @keywords internal
 #' @importFrom future getGlobalsAndPackages Future
 #' @importFrom redux redis_config
 #' @export
 RedisFuture <- function(expr = NULL,
                         substitute = TRUE,
+                        envir = parent.frame(),
                         globals = TRUE,
                         packages = NULL,
-                        envir = parent.frame(),
                         lazy = FALSE,
                         queue = "RJOBS",
                         config = redis_config(),
                         output_queue = NA,
-                        max_retries = 3,
+                        max_retries = 3L,
                         ...)
 {
   if(isTRUE(substitute)) expr <- substitute(expr)
@@ -51,8 +45,8 @@ RedisFuture <- function(expr = NULL,
   envir <- assign_globals(envir, globals = globals)
 
   future <- Future(expr = expr,
-                   envir = envir,
                    substitute = substitute,
+                   envir = envir,
                    packages = packages,
                    lazy = lazy,
                    ...)
@@ -93,15 +87,16 @@ resolved.RedisFuture <- function(x, ...) {
     return(FALSE)
   }
 
-  hi <- hiredis_future(x)
-
+  redis <- hiredis_future(x)
+  keys <- redis_keys(x)
+  
   # return status key for this task from Redis
   mdebug("redux::redis_multi() 'GET'/'EXISTS' ...", debug = debug)
-  status <- redis_multi(hi, {
-    hi[["GET"]](sprintf("%s.%s.status", x[["queue"]], x[["taskid"]]))
-    hi[["EXISTS"]](sprintf("%s.%s.live", x[["queue"]], x[["taskid"]]))
+  status <- redis_multi(redis, {
+    redis[["GET"]](key = keys[["status"]])
+    redis[["EXISTS"]](key = keys[["alive"]])
   })
-  mstr(status, debug = TRUE)
+  mstr(status, debug = debug)
   mdebug("redux::redis_multi() 'GET'/'EXISTS' ... done", debug = debug)
   
   # check for task problems
@@ -110,7 +105,7 @@ resolved.RedisFuture <- function(x, ...) {
       # The task is marked running but the corresponding 'live' key has expired.
       # Re-submit the tasks to the queue.
       mdebug("- task is running, but Redis key has expired; resubmitting", debug = debug)
-      return(!isTRUE(is.null(resubmit(x, hi))))
+      return(!isTRUE(is.null(resubmit(x, redis))))
     }
   }
   isTRUE(status[[1]] == "finished")
@@ -131,35 +126,37 @@ resubmit <- function(future, redis) {
     future[["retries"]] + 1,
     error = function(e) Inf
   )
-  warning(sprintf("Detected lost task %s, resubmitting (%d).", future[["taskid"]], future[["retries"]]))
+  warning(sprintf("Detected lost task %s, resubmitting (%d)", future[["taskid"]], future[["retries"]]))
+
+  # Redis keys used
+  keys <- redis_keys(future)
+  
   if(isTRUE(future[["retries"]] >= future[["max_retries"]])) {
     # This task has exceeded the retry limit, return an error.
-    status <- sprintf("%s.%s.status", future[["queue"]], future[["taskid"]])
-    if(redis[["EXISTS"]](status)) {
+    if(redis[["EXISTS"]](key = keys[["status"]])) {
       warning(sprintf("Task %s exceeded maximum number of retries, returning error.", future[["taskid"]]))
-      ans <- FutureResult(value = errorCondition("Task excedded maximum number of retries."))
+      result <- FutureResult(value = errorCondition("Task excedded maximum number of retries."))
+      result <- serialize(result, connection = NULL)
       status <- redis_multi(redis, {
-        redis[["LPUSH"]](key = future[["output_queue"]], serialize(ans, NULL))
-        redis[["SET"]](key = status, value = "finished")
+        redis[["LPUSH"]](key = keys[["output_queue"]], value = result)
+        redis[["SET"]](key = keys[["status"]], value = "finished")
       })
-      mstr(status, debug = TRUE)
+      mstr(status, debug = debug)
       return()
     }
   }
+  
   # No need to re-serialize here, future already cached. simply re-submit ID to queue.
-  status <- sprintf("%s.%s.status", future[["queue"]], future[["taskid"]])
+
   status <- redis_multi(redis, {
-    redis[["SET"]](key = status, value = "submitted")
-    redis[["LPUSH"]](key = future[["queue"]], future[["taskid"]])
+    redis[["SET"]](key = keys[["status"]], value = "submitted")
+    redis[["LPUSH"]](key = keys[["queue"]], value = future[["taskid"]])
   })
-  mstr(status, debug = TRUE)
+  mstr(status, debug = debug)
 
   invisible(future)
 }
 
-#' Submit the future to the task queue
-#' @param future an object of class \code{Redis.future}.
-#' @param ... additional parameters for \code{future} class methods.
 #' @importFrom digest digest
 #' @importFrom redux hiredis
 #' @importFrom future run
@@ -172,36 +169,34 @@ run.RedisFuture <- function(future, ...) {
     mdebugf("run() for %s ...", class(future)[1], debug = debug)
     on.exit(mdebugf("run() for %s ... done", class(future)[1], debug = debug))
   }
-  
+
   future[["state"]] <- "submitted"
   future[["taskid"]] <- digest(future)
+
+  # Redis keys used
+  keys <- redis_keys(future)
+  
   if(is.null(future[["output_queue"]]) || is.na(future[["output_queue"]])) {
-    future[["output_queue"]] <- sprintf("%s.%s.out", future[["queue"]], future[["taskid"]])
+    future[["output_queue"]] <- sprintf("%s.out", keys[["name"]])
   }
 
-  hi <- hiredis_future(future)
-  
-  key <- sprintf("%s.%s", future[["queue"]], future[["taskid"]])
-  live <- sprintf("%s.live", future[["queue"]])
-  status <- sprintf("%s.status", key)
+  redis <- hiredis_future(future)
+  keys <- redis_keys(future)
   
   mdebug("redux::redis_multi() 'SET' ...", debug = debug)
-  status <- redis_multi(hi, {
-    hi[["SET"]](key = key, value = serialize(future, NULL))
-    hi[["SET"]](key = live, value = "")
-    hi[["SET"]](key = status, value = "submitted")
-    hi[["LPUSH"]](key = future[["queue"]], future[["taskid"]])
+  status <- redis_multi(redis, {
+    redis[["SET"]](key = keys[["name"]], value = serialize(future, connection = NULL))
+    redis[["SET"]](key = keys[["alive"]], value = "")
+    redis[["SET"]](key = keys[["status"]], value = "submitted")
+    redis[["LPUSH"]](key = keys[["queue"]], value = future[["taskid"]])
   })
-  mstr(status, debug = TRUE)
+  mstr(status, debug = debug)
   mdebug("redux::redis_multi() 'SET' ... done", debug = debug)
 
   invisible(future)
 }
 
 
-#' Obtain and return a future task result (blocking)
-#' @param future an object of class \code{Redis.future}.
-#' @param ... additional parameters for \code{future} class methods.
 #' @importFrom future result
 #' @export
 result.RedisFuture <- function(future, ...) {
@@ -215,26 +210,25 @@ result.RedisFuture <- function(future, ...) {
     on.exit(mdebugf("result() for %s ... done", class(future)[1], debug = debug))
   }
 
-  hi <- hiredis_future(future)
-  
-  key <- sprintf("%s.%s", future[["queue"]], future[["taskid"]])
-  status <- sprintf("%s.status", key)
+  redis <- hiredis_future(future)
+  keys <- redis_keys(future)
+
   value <- NULL
 
   count <- 0L
   while(TRUE) {
     count <- count + 1L
     mdebugf(" - redis poll #%d", count, debug = debug)
-    value <- hi[["BRPOP"]](key = future[["output_queue"]], timeout = 5)[[2]]   # XXX Make configurable
+    value <- redis[["BRPOP"]](key = keys[["output_queue"]], timeout = 5.0)[[2]]   # FIXME: Make configurable
     mdebugf(" - length(value): %d", length(value), debug = debug)
     if(length(value) > 0) break
     
     mdebug("redux::redis_multi() 'GET'/'EXISTS' ...", debug = debug)
-    status <- redis_multi(hi, {
-      hi[["GET"]](sprintf("%s.%s.status", future[["queue"]], future[["taskid"]]))
-      hi[["EXISTS"]](sprintf("%s.%s.live", future[["queue"]], future[["taskid"]]))
+    status <- redis_multi(redis, {
+      redis[["GET"]](key = keys[["status"]])
+      redis[["EXISTS"]](key = keys[["alive"]])
     })
-    mstr(status, debug = TRUE)
+    mstr(status, debug = debug)
     mdebug("redux::redis_multi() 'GET'/'EXISTS' ... done", debug = debug)
     
     future[["state"]] <- status[[1]]
@@ -246,7 +240,7 @@ result.RedisFuture <- function(future, ...) {
         # The task is marked running but the corresponding 'live' key has expired.
         # Re-submit the tasks to the queue.
         mdebug("- task is running, but Redis key has expired; resubmitting", debug = debug)
-        resubmit(future, hi)
+        resubmit(future, redis)
       }
     }
     Sys.sleep(0.01) # rate limiting, but allows CTRL + C that redux lacks
@@ -257,14 +251,13 @@ result.RedisFuture <- function(future, ...) {
   
   # clean up Redis state
   mdebug("redux::redis_multi() 'DEL' ...", debug = debug)
-  status <- redis_multi(hi, {
-    hi[["DEL"]](key = future[["output_queue"]])
-    hi[["DEL"]](key = key)
-    hi[["DEL"]](key = status)
+  status <- redis_multi(redis, {
+    redis[["DEL"]](key = keys[["output_queue"]])
+    redis[["DEL"]](key = keys[["name"]])
+    redis[["DEL"]](key = keys[["status"]])
   })
-  mstr(status, debug = TRUE)
+  mstr(status, debug = debug)
   mdebug("redux::redis_multi() 'DEL' ... done", debug = debug)
-
 
   future[["result"]]
 }
@@ -283,8 +276,33 @@ hiredis_future <- function(future) {
   config <- future[["config"]]
   mstr(config, debug = debug)
   
-  api <- hiredis(config)
-  mdebugf("- result: %s object", sQuote(class(api)[1]), debug = debug)
+  redis <- hiredis(config)
+  mdebugf("- result: %s object", sQuote(class(redis)[1]), debug = debug)
+
+  redis
+}
+
+
+redis_keys <- function(future) {
+  stopifnot(inherits(future, "RedisFuture"))
   
-  api
+  debug <- getOption("future.redis.debug", FALSE)
+  if (debug) {
+    mdebug("redis_keys() ...", debug = debug)
+    on.exit(mdebug("redis_keys() ... done", debug = debug))
+  }
+
+  # Redis keys used
+  name <- sprintf("%s.%s", future[["queue"]], future[["taskid"]])
+  keys <- list(
+            name = name,
+           alive = sprintf("%s.live", name),
+          status = sprintf("%s.status", name),
+    output_queue = future[["output_queue"]],
+           queue = future[["queue"]]
+  )
+
+  mstr(keys, debug = debug)
+  
+  keys
 }

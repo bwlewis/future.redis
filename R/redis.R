@@ -4,9 +4,9 @@
 #' asynchronous task queues for elastic distributed computing.
 #'
 #' @inheritParams RedisFuture
-#' @importFrom redux redis_config
+#'
 #' @return An object of class [RedisFuture].
-#' @seealso \code{\link{redis_config}}, \code{\link{worker}}, \code{\link{removeQ}}
+#'
 #' @examples
 #' if (redux::redis_available()) {
 #' ## The example assumes that a Redis server is running on the local host
@@ -28,25 +28,36 @@
 #' # Run a simple sampling approximation of pi in parallel using  M * N points:
 #' N <- 1e6  # samples per worker
 #' M <- 10   # iterations
-#' Reduce(sum, Map(value, replicate(M, f()))) / M
+#' pi_est <- Reduce(sum, Map(value, replicate(M, f()))) / M
+#' print(pi_est)
 #' 
 #' # Clean up
 #' removeQ("R jobs")
 #' }
+#'
+#' @seealso [redux::redis_config()], [worker()], [removeQ()]
+#'
+#' @importFrom redux redis_config
 #' @export
 redis <- function(expr,
-                  envir = parent.frame(),
                   substitute = TRUE,
-                  globals = TRUE,
+                  envir = parent.frame(),
+                  ...,
                   queue = "RJOBS",
                   config = redis_config(),
                   output_queue = NA,
-                  max_retries = 3, ...)
+                  max_retries = 3L)
 {
   if (substitute) expr <- substitute(expr)
-  future <- RedisFuture(expr = expr, envir = envir, substitute = FALSE,
-              globals = globals, queue=queue, config=config,
-              output_queue=output_queue, max_retries = max_retries, ...)
+  future <- RedisFuture(
+              expr = expr, substitute = FALSE,
+              envir = envir, 
+              ...,
+              queue = queue,
+              config = config,
+              output_queue = output_queue,
+              max_retries = max_retries
+            )
   if(!isTRUE(future[["lazy"]])) future <- run(future)
   invisible(future)
 }
@@ -56,20 +67,31 @@ class(redis) <- c("RedisFuture", "future", "function")
 
 #' Remove a Redis-based work queue
 #'
-#' Redis keys beginning with the \code{queue} name are removed.
-#' Removing the work queue signlas to local and remote R workers to exit.
+#' Redis keys beginning with the `queue` name are removed.
+#' Removing the work queue signals to local and remote R workers to exit.
 #'
-#' @param config Redis config
+#' @inheritParams RedisFuture
+#'
 #' @param queue Redis key name of the task queue (Redis list)
+#'
 #' @return NULL is silently returned (this function is evaluated for the
 #' side-effect of altering Redis state).
+#'
 #' @importFrom redux redis_config hiredis
 #' @export
 removeQ <- function(queue = "RJOBS", config = redis_config())
 {
-  hiredis(config)[["DEL"]](sprintf("%s.live", queue))  # task queue liveness key
-  all_keys <- hiredis(config)[["KEYS"]](sprintf("%s.*", queue))
-  del <- hiredis(config)[["DEL"]]
-  Map(del, all_keys)
+  redis <- hiredis(config)
+
+  # Redis keys used
+  key_alive <- sprintf("%s.live", queue)
+
+  ## Remove task queue liveness key
+  redis[["DEL"]](key = key_alive)
+
+  ## Remove all other keys for this queue
+  all_keys <- redis[["KEYS"]](pattern = sprintf("%s.*", queue))
+  Map(f = redis[["DEL"]], all_keys)
+  
   invisible()
 }
