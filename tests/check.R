@@ -1,4 +1,3 @@
-library("future.redis")
 library("future.tests")
 
 if (redux::redis_available()) {
