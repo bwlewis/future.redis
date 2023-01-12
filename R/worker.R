@@ -31,12 +31,24 @@ worker <- function(queue = "RJOBS",
                    quit = FALSE,
                    log = nullfile())
 {
+  debug <- getOption("future.redis.debug", FALSE)
+  if (debug) {
+    mdebug("future.redis::worker() ...")
+    on.exit(mdebug("future.redis::worker() ... done"), add = TRUE)
+    mdebug("Arguments:")
+    mstr(list(
+      queue = queue, linger = linger, config = config, iter = iter,
+      quit = quit, log = log
+    ))
+  }
+  
   if(quit) {
-    on.exit(quit(save = "no"))
+    on.exit(quit(save = "no"), add = TRUE)
   }
 
   if(isTRUE(is.character(log)) && isTRUE(nchar(log) > 0)) {
     if (tolower(log) %in% c("/dev/null", "nil:")) log <- nullfile()
+    mdebugf("Sinking standard output and standard error to %s", log)
     f <- file(log, open = "w+")
     sink(f, append = TRUE)                   ## stdout
     sink(f, append = TRUE, type = "message") ## stderr
@@ -59,6 +71,7 @@ worker <- function(queue = "RJOBS",
     redis[["SET"]](key = key_live, value = "")
     
     while(isTRUE(N < iter)) {
+      mdebugf("%s worker (PID=%d) waiting for next task #%g", .packageName, Sys.getpid(), N)
       taskid <- redis[["BRPOP"]](key = queue, timeout = linger)[[2]]
       if(!is.null(taskid)) {
         mdebugf("Retrieved task #%g (%s)", N, taskid)
@@ -68,14 +81,16 @@ worker <- function(queue = "RJOBS",
       
       # Check for queue liveness key, worker exit if missing
       if(!redis[["EXISTS"]](key = key_live)) {
-        stop("Normal worker shutdown")
+        mdebugf("Shutting down %s::worker()", .packageName)
+        stop(sprintf("%s::worker() terminated", .packageName))
       }
     }
 
-    sprintf("Processed %g tasks", iter)
+    sprintf("%s::worker() processed %g tasks", .packageName, iter)
   }, error = function(e) {
     conditionMessage(e)
   })
+  
   mdebug(msg)
 }
 
@@ -201,7 +216,7 @@ processTask <- function(task, redis)
 #' @importFrom base64enc base64encode
 #' @export
 startLocalWorkers <- function(n, queue = "RJOBS",
-  config = redis_config(), iter = Inf, linger = 10.0, log = NULL,
+  config = redis_config(), iter = Inf, linger = 10.0, log = nullfile(),
   Rbin = paste(R.home(component = "bin"), "R", sep="/"))
 {
   stopifnot(

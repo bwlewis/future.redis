@@ -10,7 +10,7 @@ startLocalWorkers(
   config = redis_config(),
   iter = Inf,
   linger = 10,
-  log = NULL,
+  log = nullfile(),
   Rbin = paste(R.home(component = "bin"), "R", sep = "/")
 )
 }
