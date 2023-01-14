@@ -38,27 +38,29 @@ if (.Platform[["OS.type"]] == "windows") {
 if (redux::redis_available()) {
   ## Make sure we use a unique Redis queue to avoid wreaking havoc elsewhere
   queue <- sprintf("future.redis:%s", future:::session_uuid())
+  oopts <- options(future.redis.queue = queue)
 
   # worker.R
   # test log to file
-  plan(redis, queue = queue)
+  plan(redis)
   
-  ## FIXME: Make Redis queue unique to avoid wreaking havoc
-  startLocalWorkers(1L, linger = 1.0, queue = queue)
+  startLocalWorkers(1L, linger = 1.0)
   stopifnot(value(future(0L, lazy=FALSE)) == 0L)
 
 # RedisFuture-class.R (already computed globals)
   l <- list()
   attributes(l)[["already-done"]] = FALSE
   g <- future.redis:::RedisFuture(expr = 0L, globals = l, substitute = FALSE,
-         queue = queue, config = redux::redis_config(),
+         config = redux::redis_config(),
          output_queue = NA, max_retries = 1L)
   # NOTE! substitute = TRUE fails on value below? TO FIX XXX
   stopifnot(value(g) == 0L)
-  v <- redis(0L, lazy = FALSE, queue = queue)
+  v <- redis(0L, lazy = FALSE)
   stopifnot(value(v) == 0L)
 
-  removeQ(queue)
+  removeQ()
 # null task (we know for sure 'RJOBS' is not in redis from above test removeQ)
   stopifnot(is.null(future.redis:::processTask(queue, redux::hiredis())))
+  
+  options(oopts)
 }

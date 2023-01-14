@@ -24,7 +24,7 @@
 #'
 #' @importFrom redux redis_config hiredis
 #' @export
-worker <- function(queue = "RJOBS",
+worker <- function(queue = getOption("future.redis.queue", "RJOBS"),
                    linger = 10.0,
                    config = redis_config(),
                    iter = Inf,
@@ -213,7 +213,8 @@ processTask <- function(task, redis)
 #' @importFrom redux redis_config
 #' @importFrom base64enc base64encode
 #' @export
-startLocalWorkers <- function(n, queue = "RJOBS",
+startLocalWorkers <- function(n,
+  queue = getOption("future.redis.queue", "RJOBS"),
   config = redis_config(), iter = Inf, linger = 10.0, log = nullfile(),
   Rbin = paste(R.home(component = "bin"), "R", sep="/"))
 {

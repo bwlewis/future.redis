@@ -23,20 +23,23 @@ if(nchar(Sys.getenv("TEST_FAULT")) > 0 && redux::redis_available()) {
 
   ## Make sure we use a unique Redis queue to avoid wreaking havoc elsewhere
   queue <- sprintf("future.redis:%s", future:::session_uuid())
+  oopts <- options(future.redis.queue = queue)
+  
+  plan(redis, max_retries = 2L)
 
-  plan(redis, max_retries = 2L, queue = queue)
-
-  startLocalWorkers(2, linger = 1.0, queue = queue)
+  startLocalWorkers(2, linger = 1.0)
   t1 <- Sys.time()
   f <- quitter()
   if(!isTRUE(value(f) == pi)) stop("resubmit fault tolerance value error")
 
   # test of max retries on the remaining worker, expect an error
-  plan(redis, max_retries = 1L, queue = queue)
+  plan(redis, max_retries = 1L)
   t1 <- Sys.time()
   f <- quitter()
   ans <- value(f)
   if(!isTRUE(inherits(ans, "error"))) stop("max_retries fault tolerance error")
 
-  removeQ(queue)
+  removeQ()
+  
+  options(oopts)
 }

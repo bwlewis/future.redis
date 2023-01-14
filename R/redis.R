@@ -41,7 +41,7 @@ redis <- function(expr,
                   substitute = TRUE,
                   envir = parent.frame(),
                   ...,
-                  queue = "RJOBS",
+                  queue = getOption("future.redis.queue", "RJOBS"),
                   config = redis_config(),
                   output_queue = NA,
                   max_retries = 3L)

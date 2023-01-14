@@ -2,7 +2,10 @@ if (require("future.tests") && redux::redis_available()) {
   library("future.redis")
   plan(redis)
 
-  ## FIXME: Make Redis queue unique to avoid wreaking havoc
+  ## Make sure we use a unique Redis queue to avoid wreaking havoc elsewhere
+  queue <- sprintf("future.redis:%s", future:::session_uuid())
+  oopts <- options(future.redis.queue = queue)
+  
   removeQ()
   startLocalWorkers(1L, linger = 1.0)
 
@@ -17,4 +20,6 @@ if (require("future.tests") && redux::redis_available()) {
     # quits R session before we can clean up Redis with removeQ.
   }
   result <- run()
+
+  options(oopts)
 }
