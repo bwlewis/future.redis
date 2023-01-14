@@ -40,7 +40,7 @@ if (redux::redis_available()) {
   # test log to file
   plan(redis)
   
-  startLocalWorkers(1L, linger = 1.0)
+  workers <- startLocalWorkers(1L, linger = 1.0)
   stopifnot(value(future(0L, lazy=FALSE)) == 0L)
 
   # RedisFuture-class.R (already computed globals)
@@ -54,7 +54,9 @@ if (redux::redis_available()) {
   v <- redis(0L, lazy = FALSE)
   stopifnot(value(v) == 0L)
 
-  removeQ()
+  ## Make sure to stop local workers
+  stopLocalWorkers(workers)
+  
   # Assert that queue(?!?) is not in Redis
   queue <- getOption("future.redis.queue", "{{session}}")
   queue <- future.redis:::redis_queue(queue)

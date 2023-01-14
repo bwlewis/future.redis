@@ -2,6 +2,7 @@
 % Please edit documentation in R/worker.R
 \name{startLocalWorkers}
 \alias{startLocalWorkers}
+\alias{stopLocalWorkers}
 \title{Start one or more background R worker processes on the local system.}
 \usage{
 startLocalWorkers(
@@ -12,6 +13,11 @@ startLocalWorkers(
   linger = 10,
   log = nullfile(),
   Rbin = paste(R.home(component = "bin"), "R", sep = "/")
+)
+
+stopLocalWorkers(
+  queue = getOption("future.redis.queue", "{{session}}"),
+  config = redis_config()
 )
 }
 \arguments{
@@ -31,31 +37,37 @@ termination).}
 \item{Rbin}{full path to the command-line R program.}
 }
 \value{
-Invisibly the arguments passed to each of the background workers.
+\code{startLocalWorkers()} returns, invisibly, a \code{RedisWorkerConfiguration}
+object, which comprise of the arguments passed to each of the background
+workers on startup.
+
+\code{stopLocalWorkers()} returns nothing.
 }
 \description{
 Use \code{startLocalWorkers()} to start one or more \strong{future.redis} R worker
 processes in the background. The worker processes are started on the local
-system using the \code{\link[=worker]{worker()}} function.
+system using the \code{\link[=worker]{worker()}} function.  Additional workers can be launched
+by calling \code{startLocalWorkers()} multiple times.
 }
 \details{
-Running workers self-terminate after a \code{linger} interval if their task
-queue is deleted with the \code{\link[=removeQ]{removeQ()}} function, or if network
-communication with the Redis server encounters an error.
+\code{stopLocalWorkers()} can remove the task queue for these workers. All
+workers that listen to the task queue will self-terminate after a
+\code{linger} interval (seconds) if the task queue is no longer available,
+or if network communication with the Redis server encounters an error.
+When passing an \code{RedisWorkerConfiguration} object to \code{stopLocalWorkers()},
+the \code{queue} and \code{config} values are extracted from that object.
 }
 \examples{
+## The example assumes that a Redis server is running
+## on the local host and the standard Redis port (6379)
 if (redux::redis_available()) {
-## The example assumes that a Redis server is running on the local host
-## and standard port.
 
-# Register the redis plan on a specified task queue:
-plan(redis, queue = "R jobs")
+# Start two local R worker processes running in the background
+workers <- startLocalWorkers(2L, linger = 1.0)
 
-# Start some local R worker processes:
-## FIXME: Make Redis queue unique to avoid wreaking havoc
-startLocalWorkers(n=2, queue="R jobs", linger=1.0)
+plan(redis)
 
-# A function that returns a future (note the scope of N)
+# A function that returns a future, note that N uses lexical scoping...
 f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
 
 # Run a simple sampling approximation of pi in parallel using  M * N points:
@@ -64,9 +76,9 @@ M <- 10   # iterations
 pi_est <- Reduce(sum, Map(value, replicate(M, f()))) / M
 print(pi_est)
 
-# Clean up
-## FIXME: Make Redis queue unique to avoid wreaking havoc
-removeQ("R jobs")
+# Make sure to stop the workers
+stopLocalWorkers(workers)
+
 }
 
 }

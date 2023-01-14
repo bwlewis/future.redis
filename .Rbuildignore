@@ -1,5 +1,6 @@
 ^[.]gitignore
 ^[.]github
 ^docs
+^incl
 
 

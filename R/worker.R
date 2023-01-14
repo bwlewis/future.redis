@@ -171,11 +171,15 @@ processTask <- function(task, redis)
 #'
 #' Use `startLocalWorkers()` to start one or more **future.redis** R worker
 #' processes in the background. The worker processes are started on the local
-#' system using the [worker()] function.
+#' system using the [worker()] function.  Additional workers can be launched
+#' by calling `startLocalWorkers()` multiple times.
 #'
-#' Running workers self-terminate after a `linger` interval if their task
-#' queue is deleted with the [removeQ()] function, or if network
-#' communication with the Redis server encounters an error.
+#' `stopLocalWorkers()` can remove the task queue for these workers. All
+#' workers that listen to the task queue will self-terminate after a
+#' `linger` interval (seconds) if the task queue is no longer available,
+#' or if network communication with the Redis server encounters an error.
+#' When passing an `RedisWorkerConfiguration` object to `stopLocalWorkers()`,
+#' the `queue` and `config` values are extracted from that object.
 #'
 #' @inheritParams worker
 #'
@@ -183,34 +187,18 @@ processTask <- function(task, redis)
 #'
 #' @param Rbin full path to the command-line R program.
 #'
-#' @return Invisibly the arguments passed to each of the background workers.
+#' @return
+#' `startLocalWorkers()` returns, invisibly, a `RedisWorkerConfiguration`
+#' object, which comprise of the arguments passed to each of the background
+#' workers on startup.
+
+#' @return
+#' `stopLocalWorkers()` returns nothing.
+#'
+#'
+#' @example incl/redis.R
 #'
 #' @seealso [redux::redis_config()], [worker()], [removeQ()]
-#' @examples
-#' if (redux::redis_available()) {
-#' ## The example assumes that a Redis server is running on the local host
-#' ## and standard port.
-#' 
-#' # Register the redis plan on a specified task queue:
-#' plan(redis, queue = "R jobs")
-#' 
-#' # Start some local R worker processes:
-#' ## FIXME: Make Redis queue unique to avoid wreaking havoc
-#' startLocalWorkers(n=2, queue="R jobs", linger=1.0)
-#' 
-#' # A function that returns a future (note the scope of N)
-#' f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
-#' 
-#' # Run a simple sampling approximation of pi in parallel using  M * N points:
-#' N <- 1e6  # samples per worker
-#' M <- 10   # iterations
-#' pi_est <- Reduce(sum, Map(value, replicate(M, f()))) / M
-#' print(pi_est)
-#' 
-#' # Clean up
-#' ## FIXME: Make Redis queue unique to avoid wreaking havoc
-#' removeQ("R jobs")
-#' }
 #'
 #' @importFrom redux redis_config
 #' @importFrom base64enc base64encode
@@ -244,5 +232,19 @@ startLocalWorkers <- function(n,
   code <- sprintf("args <- unserialize(base64enc::base64decode('%s')); do.call(future.redis::worker, args)", worker_args)
   args <- c("-s", "--no-save", "-e", shQuote(code))
   replicate(n, system2(Rbin, args = args, wait=FALSE))
+
+  class(res) <- c("RedisWorkerConfiguration", class(res))
+  
   invisible(res)
+}
+
+
+#' @rdname startLocalWorkers
+#' @export
+stopLocalWorkers <- function(queue = getOption("future.redis.queue", "{{session}}"), config = redis_config()) {
+  if (inherits(queue, "RedisWorkerConfiguration")) {
+    config <- queue[["config"]]
+    queue <- queue[["queue"]]
+  }
+  removeQ(queue = queue, config = config)
 }

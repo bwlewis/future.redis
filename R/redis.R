@@ -7,31 +7,7 @@
 #'
 #' @return An object of class [RedisFuture].
 #'
-#' @examples
-#' if (redux::redis_available()) {
-#' ## The example assumes that a Redis server is running on the local host
-#' ## and standard port.
-#' 
-#' # Register the redis plan on a specified task queue:
-#' plan(redis, queue = "R jobs")
-#' 
-#' # Start some local R worker processes:
-#' ## FIXME: Make Redis queue unique to avoid wreaking havoc
-#' startLocalWorkers(n=2, queue="R jobs", linger=1.0)
-#' 
-#' # A function that returns a future, note that N uses lexical scoping...
-#' f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
-#' 
-#' # Run a simple sampling approximation of pi in parallel using  M * N points:
-#' N <- 1e6  # samples per worker
-#' M <- 10   # iterations
-#' pi_est <- Reduce(sum, Map(value, replicate(M, f()))) / M
-#' print(pi_est)
-#' 
-#' # Clean up
-#' ## FIXME: Make Redis queue unique to avoid wreaking havoc
-#' removeQ("R jobs")
-#' }
+#' @example incl/redis.R
 #'
 #' @seealso [redux::redis_config()], [worker()], [removeQ()]
 #'

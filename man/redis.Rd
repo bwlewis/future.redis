@@ -44,16 +44,14 @@ Use the Redis key/value database to define partially fault-tolerant,
 asynchronous task queues for elastic distributed computing.
 }
 \examples{
+## The example assumes that a Redis server is running
+## on the local host and the standard Redis port (6379)
 if (redux::redis_available()) {
-## The example assumes that a Redis server is running on the local host
-## and standard port.
 
-# Register the redis plan on a specified task queue:
-plan(redis, queue = "R jobs")
+# Start two local R worker processes running in the background
+workers <- startLocalWorkers(2L, linger = 1.0)
 
-# Start some local R worker processes:
-## FIXME: Make Redis queue unique to avoid wreaking havoc
-startLocalWorkers(n=2, queue="R jobs", linger=1.0)
+plan(redis)
 
 # A function that returns a future, note that N uses lexical scoping...
 f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
@@ -64,9 +62,9 @@ M <- 10   # iterations
 pi_est <- Reduce(sum, Map(value, replicate(M, f()))) / M
 print(pi_est)
 
-# Clean up
-## FIXME: Make Redis queue unique to avoid wreaking havoc
-removeQ("R jobs")
+# Make sure to stop the workers
+stopLocalWorkers(workers)
+
 }
 
 }
