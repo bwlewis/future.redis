@@ -226,8 +226,16 @@ startLocalWorkers <- function(n, queue = "RJOBS",
   )
 
   ## Arguments for future.redis::worker()
-  worker_args <- list(queue = queue, linger = linger, config = config,
-                      iter = iter, quit = TRUE, log = log)
+  ## FIXME: Pass most or all of this as command-line arguments to
+  ## make it easier to identify them from 'ps' output /HB 2023-01-14
+  worker_args <- list(
+    queue = queue,      ## character scalar
+    linger = linger,    ## numeric scalar
+    config = config,    ## WARNING: might expose a password
+    iter = iter,        ## numeric scalar
+    quit = TRUE,        ## logical
+    log = log           ## character string
+  )
   worker_args <- serialize(worker_args, connection = NULL)
   worker_args <- base64encode(worker_args)
   code <- sprintf("args <- unserialize(base64enc::base64decode('%s')); do.call(future.redis::worker, args)", worker_args)
