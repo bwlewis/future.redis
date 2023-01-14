@@ -46,6 +46,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: shogo82148/actions-setup-redis@v1
+      - run: redis-cli ping
+
       - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-tinytex@v2
