@@ -49,13 +49,19 @@ Then, launch R, and try the following code:
 library(future.redis)
 
 ## Start two future.redis parallel workers
-startLocalWorkers(2)
+workers <- startLocalWorkers(2)
+
+## Use them for futures
+plan(redis)
 
 ## Create a future that calculates the sum of 1:100
 f <- future(sum(1:100))
 v <- value(f)
 print(v)
 ## [1] 5050
+
+## Stop the local workers
+stopLocalWorkers(workers)
 ```
 
 You should also get 5050.  If it stalls when you call `value()`, make
