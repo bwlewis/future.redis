@@ -145,7 +145,7 @@ resubmit <- function(future, redis) {
         redis[["LPUSH"]](key = keys[["output_queue"]], value = result)
         redis[["SET"]](key = keys[["status"]], value = "finished")
       })
-      mstr(status, debug = debug)
+      mstr(status)
       return()
     }
   }
