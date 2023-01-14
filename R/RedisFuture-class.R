@@ -88,7 +88,7 @@ resolved.RedisFuture <- function(x, ...) {
   }
 
   redis <- hiredis_future(x)
-  keys <- redis_keys(x)
+  keys <- redis_future_keys(x)
   
   # return status key for this task from Redis
   mdebug("redux::redis_multi() 'GET'/'EXISTS' ...", debug = debug)
@@ -129,7 +129,7 @@ resubmit <- function(future, redis) {
   warning(sprintf("Detected lost task %s, resubmitting (%d)", future[["taskid"]], future[["retries"]]))
 
   # Redis keys used
-  keys <- redis_keys(future)
+  keys <- redis_future_keys(future)
   
   if(isTRUE(future[["retries"]] >= future[["max_retries"]])) {
     # This task has exceeded the retry limit, return an error.
@@ -174,14 +174,14 @@ run.RedisFuture <- function(future, ...) {
   future[["taskid"]] <- digest(future)
 
   # Redis keys used
-  keys <- redis_keys(future)
+  keys <- redis_future_keys(future)
   
   if(is.null(future[["output_queue"]]) || is.na(future[["output_queue"]])) {
     future[["output_queue"]] <- sprintf("%s.out", keys[["name"]])
   }
 
   redis <- hiredis_future(future)
-  keys <- redis_keys(future)
+  keys <- redis_future_keys(future)
   
   mdebug("redux::redis_multi() 'SET' ...", debug = debug)
   status <- redis_multi(redis, {
@@ -211,7 +211,7 @@ result.RedisFuture <- function(future, ...) {
   }
 
   redis <- hiredis_future(future)
-  keys <- redis_keys(future)
+  keys <- redis_future_keys(future)
 
   value <- NULL
 
@@ -283,13 +283,13 @@ hiredis_future <- function(future) {
 }
 
 
-redis_keys <- function(future) {
+redis_future_keys <- function(future) {
   stopifnot(inherits(future, "RedisFuture"))
   
   debug <- getOption("future.redis.debug", FALSE)
   if (debug) {
-    mdebug("redis_keys() ...", debug = debug)
-    on.exit(mdebug("redis_keys() ... done", debug = debug))
+    mdebug("redis_future_keys() ...", debug = debug)
+    on.exit(mdebug("redis_future_keys() ... done", debug = debug))
   }
 
   # Redis keys used
