@@ -93,15 +93,15 @@ resolved.RedisFuture <- function(x, ...) {
   # return status key for this task from Redis
   mdebug("redux::redis_multi() 'GET'/'EXISTS' ...", debug = debug)
   status <- redis_multi(redis, {
-    redis[["GET"]](key = keys[["status"]])
-    redis[["EXISTS"]](key = keys[["alive"]])
+    redis[["GET"]](key = keys[["status"]])    ## a string
+    redis[["EXISTS"]](key = keys[["alive"]])  ## 0L if not, 1L if exists
   })
   mstr(status, debug = debug)
   mdebug("redux::redis_multi() 'GET'/'EXISTS' ... done", debug = debug)
   
   # check for task problems
   if(isTRUE(status[[1]] == "running")) {
-    if(!isTRUE(status[[2]] == 1)) {
+    if(!isTRUE(status[[2]] == 1L)) {  ## key does not exist
       # The task is marked running but the corresponding 'live' key has expired.
       # Re-submit the tasks to the queue.
       mdebug("- task is running, but Redis key has expired; resubmitting", debug = debug)
@@ -134,8 +134,12 @@ resubmit <- function(future, redis) {
   if(isTRUE(future[["retries"]] >= future[["max_retries"]])) {
     # This task has exceeded the retry limit, return an error.
     if(redis[["EXISTS"]](key = keys[["status"]])) {
-      warning(sprintf("Task %s exceeded maximum number of retries, returning error.", future[["taskid"]]))
-      result <- FutureResult(value = errorCondition("Task excedded maximum number of retries."))
+      msg <- sprintf("Task %s exceeded maximum number of retries (%g), returning error",
+                     future[["taskid"]], future[["max_retries"]])
+      warning(msg)
+      msg <- sprintf("Task exceeded maximum number of retries (%g)",
+                     future[["max_retries"]])
+      result <- FutureResult(value = errorCondition(msg))
       result <- serialize(result, connection = NULL)
       status <- redis_multi(redis, {
         redis[["LPUSH"]](key = keys[["output_queue"]], value = result)
@@ -225,8 +229,8 @@ result.RedisFuture <- function(future, ...) {
     
     mdebug("redux::redis_multi() 'GET'/'EXISTS' ...", debug = debug)
     status <- redis_multi(redis, {
-      redis[["GET"]](key = keys[["status"]])
-      redis[["EXISTS"]](key = keys[["alive"]])
+      redis[["GET"]](key = keys[["status"]])    ## a string
+      redis[["EXISTS"]](key = keys[["alive"]])  ## 0L if not, 1L if exists
     })
     mstr(status, debug = debug)
     mdebug("redux::redis_multi() 'GET'/'EXISTS' ... done", debug = debug)
@@ -236,7 +240,7 @@ result.RedisFuture <- function(future, ...) {
     
     # check for task problems
     if(isTRUE(future[["state"]] == "running")) {
-      if(!isTRUE(status[[2]] == 1)) {
+      if(!isTRUE(status[[2]] == 1L)) {  # does not exists
         # The task is marked running but the corresponding 'live' key has expired.
         # Re-submit the tasks to the queue.
         mdebug("- task is running, but Redis key has expired; resubmitting", debug = debug)
