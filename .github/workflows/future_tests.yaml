@@ -35,7 +35,9 @@ jobs:
 
       - uses: shogo82148/actions-setup-redis@v1
         if: runner.os != 'Windows'
+        
       - run: redis-cli ping
+        if: runner.os != 'Windows'
 
       - uses: r-lib/actions/setup-pandoc@v2
 
