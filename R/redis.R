@@ -41,7 +41,7 @@ redis <- function(expr,
                   substitute = TRUE,
                   envir = parent.frame(),
                   ...,
-                  queue = getOption("future.redis.queue", "RJOBS"),
+                  queue = getOption("future.redis.queue", "{{session}}"),
                   config = redis_config(),
                   output_queue = NA,
                   max_retries = 3L)
@@ -77,7 +77,7 @@ class(redis) <- c("RedisFuture", "future", "function")
 #'
 #' @importFrom redux redis_config hiredis
 #' @export
-removeQ <- function(queue = getOption("future.redis.queue", "RJOBS"), config = redis_config())
+removeQ <- function(queue = getOption("future.redis.queue", "{{session}}"), config = redis_config())
 {
   queue <- redis_queue(queue)
   redis <- hiredis(config)

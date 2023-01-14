@@ -6,7 +6,7 @@
 \usage{
 startLocalWorkers(
   n,
-  queue = getOption("future.redis.queue", "RJOBS"),
+  queue = getOption("future.redis.queue", "{{session}}"),
   config = redis_config(),
   iter = Inf,
   linger = 10,

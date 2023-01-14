@@ -5,7 +5,7 @@
 \title{Start a Redis worker process loop}
 \usage{
 worker(
-  queue = getOption("future.redis.queue", "RJOBS"),
+  queue = getOption("future.redis.queue", "{{session}}"),
   linger = 10,
   config = redis_config(),
   iter = Inf,

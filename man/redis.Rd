@@ -9,7 +9,7 @@ redis(
   substitute = TRUE,
   envir = parent.frame(),
   ...,
-  queue = getOption("future.redis.queue", "RJOBS"),
+  queue = getOption("future.redis.queue", "{{session}}"),
   config = redis_config(),
   output_queue = NA,
   max_retries = 3L

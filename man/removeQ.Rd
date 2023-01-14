@@ -5,7 +5,7 @@
 \title{Remove a Redis-based work queue}
 \usage{
 removeQ(
-  queue = getOption("future.redis.queue", "RJOBS"),
+  queue = getOption("future.redis.queue", "{{session}}"),
   config = redis_config()
 )
 }

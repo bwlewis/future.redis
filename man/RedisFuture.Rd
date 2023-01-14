@@ -11,7 +11,7 @@ RedisFuture(
   globals = TRUE,
   packages = NULL,
   lazy = FALSE,
-  queue = getOption("future.redis.queue", "RJOBS"),
+  queue = getOption("future.redis.queue", "{{session}}"),
   config = redis_config(),
   output_queue = NA,
   max_retries = 3L,

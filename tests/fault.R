@@ -20,10 +20,6 @@ quitter <- function() {
 
 if(nchar(Sys.getenv("TEST_FAULT")) > 0 && redux::redis_available()) {
   library("future.redis")
-
-  ## Make sure we use a unique Redis queue to avoid wreaking havoc elsewhere
-  queue <- sprintf("future.redis:%s", future:::session_uuid())
-  oopts <- options(future.redis.queue = queue)
   
   plan(redis, max_retries = 2L)
 
@@ -40,6 +36,4 @@ if(nchar(Sys.getenv("TEST_FAULT")) > 0 && redux::redis_available()) {
   if(!isTRUE(inherits(ans, "error"))) stop("max_retries fault tolerance error")
 
   removeQ()
-  
-  options(oopts)
 }
