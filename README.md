@@ -1,5 +1,5 @@
 <div id="badges"><!-- pkgdown markup -->
-<a href="https://CRAN.R-project.org/web/checks/check_results_future.redis.html"><img border="0" src="https://www.r-pkg.org/badges/version/future.redis" alt="CRAN check status"/></a>
+<img border="0" src="https://www.r-pkg.org/badges/version/future.redis" alt="CRAN check status"/>
 <a href="https://github.com/HenrikBengtsson/future.redis/actions?query=workflow%3AR-CMD-check"><img border="0" src="https://github.com/HenrikBengtsson/future.redis/actions/workflows/R-CMD-check.yaml/badge.svg?branch=develop" alt="R CMD check status"/></a>
 <a href="https://github.com/HenrikBengtsson/future.redis/actions?query=workflow%3Afuture_tests"><img border="0" src="https://github.com/HenrikBengtsson/future.redis/actions/workflows/future_tests.yaml/badge.svg?branch=develop" alt="future.tests checks status"/></a>
 </div>
