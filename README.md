@@ -59,7 +59,7 @@ print(v)
 ```
 
 You should also get 5050.  If it stalls when you call `value()`, make
-sure you did indeed start the parallel first.
+sure you did indeed start the parallel workers first.
 
 For more information and examples, see `?future.redis::future.redis`.
 
