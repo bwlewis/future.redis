@@ -52,11 +52,7 @@ if (redux::redis_available()) {
 plan(redis, queue = "R jobs")
 
 # Start some local R worker processes:
-startLocalWorkers(n=2, queue="R jobs", linger=1)
-
-# Alternatively, use the following to run the workers quietly without
-# showing messages as they run:
-# startLocalWorkers(n=2, queue="R jobs", linger=1, log="/dev/null")
+startLocalWorkers(n=2, queue="R jobs", linger=1.0)
 
 # A function that returns a future, note that N uses lexical scoping...
 f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)

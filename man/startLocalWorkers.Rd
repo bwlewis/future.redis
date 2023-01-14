@@ -54,10 +54,6 @@ plan(redis, queue = "R jobs")
 # Start some local R worker processes:
 startLocalWorkers(n=2, queue="R jobs", linger=1.0)
 
-# Alternatively, use the following to run the workers quietly without
-# showing their output as they run:
-# startLocalWorkers(n=2, queue="R jobs", linger=1.0, log="/dev/null")
-
 # A function that returns a future (note the scope of N)
 f <- \() future({4 * sum((runif(N) ^ 2 + runif(N) ^ 2) < 1) / N}, seed = TRUE)
 
