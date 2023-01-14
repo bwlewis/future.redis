@@ -183,7 +183,7 @@ processTask <- function(task, redis)
 #'
 #' @param Rbin full path to the command-line R program.
 #'
-#' @return NULL is invisibly returned.
+#' @return Invisibly the arguments passed to each of the background workers.
 #'
 #' @seealso [redux::redis_config()], [worker()], [removeQ()]
 #' @examples
@@ -231,7 +231,7 @@ startLocalWorkers <- function(n,
   ## Arguments for future.redis::worker()
   ## FIXME: Pass most or all of this as command-line arguments to
   ## make it easier to identify them from 'ps' output /HB 2023-01-14
-  worker_args <- list(
+  res <- worker_args <- list(
     queue = queue,      ## character scalar
     linger = linger,    ## numeric scalar
     config = config,    ## WARNING: might expose a password
@@ -244,5 +244,5 @@ startLocalWorkers <- function(n,
   code <- sprintf("args <- unserialize(base64enc::base64decode('%s')); do.call(future.redis::worker, args)", worker_args)
   args <- c("-s", "--no-save", "-e", shQuote(code))
   replicate(n, system2(Rbin, args = args, wait=FALSE))
-  invisible()
+  invisible(res)
 }

@@ -31,7 +31,7 @@ termination).}
 \item{Rbin}{full path to the command-line R program.}
 }
 \value{
-NULL is invisibly returned.
+Invisibly the arguments passed to each of the background workers.
 }
 \description{
 Use \code{startLocalWorkers()} to start one or more \strong{future.redis} R worker
