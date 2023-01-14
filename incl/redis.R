@@ -20,4 +20,3 @@ print(pi_est)
 stopLocalWorkers(workers)
 
 }
-

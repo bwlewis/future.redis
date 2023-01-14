@@ -29,7 +29,7 @@ RedisFuture <- function(expr = NULL,
                         lazy = FALSE,
                         queue = getOption("future.redis.queue", "{{session}}"),
                         config = redis_config(),
-                        output_queue = NA,
+                        output_queue = NA_character_,
                         max_retries = 3L,
                         ...)
 {
