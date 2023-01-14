@@ -77,8 +77,9 @@ class(redis) <- c("RedisFuture", "future", "function")
 #'
 #' @importFrom redux redis_config hiredis
 #' @export
-removeQ <- function(queue = "RJOBS", config = redis_config())
+removeQ <- function(queue = getOption("future.redis.queue", "RJOBS"), config = redis_config())
 {
+  queue <- redis_queue(queue)
   redis <- hiredis(config)
 
   # Redis keys used

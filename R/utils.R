@@ -111,3 +111,28 @@ mstr <- function(..., prefix = now(), debug = getOption("future.redis.debug", FA
   stdout <- paste(prefix, stdout, sep = "", collapse = "\n")
   message(stdout)
 }
+
+
+redis_queue <- function(queue) {
+  stopifnot(
+    length(queue) == 1L,
+    is.character(queue),
+    !is.na(queue),
+    nzchar(queue)
+  )
+
+  pattern <- "^[{][{]([^}]*)[}][}]"
+  if (grepl(pattern, queue)) {
+    what <- sub(pattern, "\\1", queue)
+    if (what == "session") {
+      session_uuid <- import_future("session_uuid")
+      queue <- sprintf("%s:%s", .packageName, session_uuid())
+    } else if (what == "user") {
+      queue <- sprintf("%s:%s", .packageName, Sys.info()[["user"]])
+    } else {
+      stop(sprintf("Unsupported Redis queue declaration: ", sQuote(queue)))
+    }
+  }
+
+  queue
+}

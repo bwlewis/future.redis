@@ -31,6 +31,8 @@ worker <- function(queue = getOption("future.redis.queue", "RJOBS"),
                    quit = FALSE,
                    log = nullfile())
 {
+  queue <- redis_queue(queue)
+  
   debug <- getOption("future.redis.debug", FALSE)
   if (debug) {
     mdebug("future.redis::worker() ...")
@@ -223,6 +225,8 @@ startLocalWorkers <- function(n,
     length(iter) == 1L, !is.na(iter), is.numeric(iter), iter >= 1,
     length(linger) == 1L, !is.na(linger), is.numeric(linger), linger >= 0.0
   )
+
+  queue <- redis_queue(queue)
 
   ## Arguments for future.redis::worker()
   ## FIXME: Pass most or all of this as command-line arguments to

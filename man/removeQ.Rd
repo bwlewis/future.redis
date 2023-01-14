@@ -4,7 +4,10 @@
 \alias{removeQ}
 \title{Remove a Redis-based work queue}
 \usage{
-removeQ(queue = "RJOBS", config = redis_config())
+removeQ(
+  queue = getOption("future.redis.queue", "RJOBS"),
+  config = redis_config()
+)
 }
 \arguments{
 \item{queue}{Redis key name of the task queue (Redis list)}
