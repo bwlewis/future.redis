@@ -121,17 +121,26 @@ redis_queue <- function(queue) {
     nzchar(queue)
   )
 
-  pattern <- "^[{][{]([^}]*)[}][}]"
-  if (grepl(pattern, queue)) {
-    what <- sub(pattern, "\\1", queue)
+  ## Replace all {{...}} values one by one
+  pattern <- "^([^}]*)[{][{]([^}]*)[}][}](.*)$"
+  while (grepl(pattern, queue)) {
+    what <- sub(pattern, "\\2", queue)
     if (what == "session") {
       session_uuid <- import_future("session_uuid")
-      queue <- sprintf("%s:%s", .packageName, session_uuid())
+      value <- session_uuid()
     } else if (what == "user") {
-      queue <- sprintf("%s:%s", .packageName, Sys.info()[["user"]])
+      value <- Sys.info()[["user"]]
+    } else if (what == "hostname") {
+      value <- Sys.info()[["nodename"]]
     } else {
       stop(sprintf("Unsupported Redis queue declaration: ", sQuote(queue)))
     }
+    queue <- gsub(pattern, sprintf("\\1%s\\3", value), queue)
+  }
+
+  ## Add package prefix, iff missing
+  if (!grepl(sprintf("^%s:", .packageName), queue)) {
+    queue <- sprintf("%s:%s", .packageName, queue)
   }
 
   queue
