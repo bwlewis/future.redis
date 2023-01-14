@@ -8,7 +8,8 @@ Imports:
     digest,
     redux,
     utils
-Suggests: future.tests
+Suggests:
+    future.tests
 Title: An Elastic Distributed Computing Backend for the Future Package
 Authors@R: c(person("Bryan", "Lewis", role=c("aut", "cre", "cph"), email = "blewis@illposed.net"))
 Description: A future API implementation using the Redis key/value database to define partially fault-tolerant task queues for elastic distributed computing.
