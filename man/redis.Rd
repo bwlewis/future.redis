@@ -26,7 +26,7 @@ identified.}
 
 \item{...}{Additional named elements of the future.}
 
-\item{queue}{Redis key name of the task queue (Redis list).}
+\item{queue}{A Redis key name of the task queue, or a}
 
 \item{config}{A \link[redux:redis_config]{redux::redis_config} Redis configuration object.}
 

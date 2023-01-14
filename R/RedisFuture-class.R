@@ -4,9 +4,10 @@
 #'
 #' @inheritParams future::`Future-class`
 #'
-#' @param config A [redux::redis_config] Redis configuration object.
+#' @param queue A Redis key name of the task queue, or a
+#  `RedisWorkerConfiguration` object as returned by [startLocalWorkers()].
 #'
-#' @param queue Redis key name of the task queue (Redis list).
+#' @param config A [redux::redis_config] Redis configuration object.
 #'
 #' @param output_queue (optional) Redis key name of the work output queue
 #'        (note: reserved for future use).
@@ -33,6 +34,22 @@ RedisFuture <- function(expr = NULL,
                         ...)
 {
   if(isTRUE(substitute)) expr <- substitute(expr)
+
+  if (inherits(queue, "RedisWorkerConfiguration")) {
+    config <- queue[["config"]]
+    queue <- queue[["queue"]]
+  }
+  queue <- redis_queue(queue)
+  stopifnot(inherits(config, "redis_config"))
+
+  stopifnot(
+    length(max_retries) == 1L,
+    is.numeric(max_retries),
+    is.finite(max_retries),
+    max_retries >= 1
+  )
+  max_retries <- as.integer(max_retries)
+
   ## Record globals
   if(!isTRUE(attr(globals, "already-done", exact = TRUE))) {
     gp <- getGlobalsAndPackages(expr, envir = envir, persistent = FALSE, globals = globals)
@@ -41,6 +58,7 @@ RedisFuture <- function(expr = NULL,
     expr <- gp[["expr"]]
     gp <- NULL
   }
+
   envir <- new.env(parent = envir)
   envir <- assign_globals(envir, globals = globals)
 
@@ -51,10 +69,11 @@ RedisFuture <- function(expr = NULL,
                    lazy = lazy,
                    ...)
   future[["config"]] <- config
-  future[["queue"]] <- redis_queue(queue)
+  future[["queue"]] <- queue
   future[["retries"]] <- 0L
   future[["state"]] <- "created"
-  future[["max_retries"]] <- as.integer(max_retries)
+  future[["max_retries"]] <- max_retries
+  
   structure(future, class = c("RedisFuture", class(future)))
 }
 

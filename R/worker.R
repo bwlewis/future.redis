@@ -178,8 +178,10 @@ processTask <- function(task, redis)
 #' workers that listen to the task queue will self-terminate after a
 #' `linger` interval (seconds) if the task queue is no longer available,
 #' or if network communication with the Redis server encounters an error.
-#' When passing an `RedisWorkerConfiguration` object to `stopLocalWorkers()`,
-#' the `queue` and `config` values are extracted from that object.
+#'
+#' When passing an `RedisWorkerConfiguration` object to `startLocalWorkers()`
+#' and `stopLocalWorkers()`, the `queue` and `config` values are extracted
+#' from that object.
 #'
 #' @inheritParams worker
 #'
@@ -214,7 +216,12 @@ startLocalWorkers <- function(n,
     length(linger) == 1L, !is.na(linger), is.numeric(linger), linger >= 0.0
   )
 
+  if (inherits(queue, "RedisWorkerConfiguration")) {
+    config <- queue[["config"]]
+    queue <- queue[["queue"]]
+  }
   queue <- redis_queue(queue)
+  stopifnot(inherits(config, "redis_config"))
 
   ## Arguments for future.redis::worker()
   ## FIXME: Pass most or all of this as command-line arguments to

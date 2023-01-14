@@ -54,8 +54,10 @@ by calling \code{startLocalWorkers()} multiple times.
 workers that listen to the task queue will self-terminate after a
 \code{linger} interval (seconds) if the task queue is no longer available,
 or if network communication with the Redis server encounters an error.
-When passing an \code{RedisWorkerConfiguration} object to \code{stopLocalWorkers()},
-the \code{queue} and \code{config} values are extracted from that object.
+
+When passing an \code{RedisWorkerConfiguration} object to \code{startLocalWorkers()}
+and \code{stopLocalWorkers()}, the \code{queue} and \code{config} values are extracted
+from that object.
 }
 \examples{
 ## The example assumes that a Redis server is running
