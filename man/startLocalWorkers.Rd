@@ -82,7 +82,6 @@ print(pi_est)
 stopLocalWorkers(workers)
 
 }
-
 }
 \seealso{
 \code{\link[redux:redis_config]{redux::redis_config()}}, \code{\link[=worker]{worker()}}, \code{\link[=removeQ]{removeQ()}}

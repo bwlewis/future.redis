@@ -5,7 +5,7 @@
 #' @inheritParams future::`Future-class`
 #'
 #' @param queue A Redis key name of the task queue, or a
-#  `RedisWorkerConfiguration` object as returned by [startLocalWorkers()].
+#' `RedisWorkerConfiguration` object as returned by [startLocalWorkers()].
 #'
 #' @param config A [redux::redis_config] Redis configuration object.
 #'

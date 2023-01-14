@@ -26,7 +26,8 @@ identified.}
 
 \item{...}{Additional named elements of the future.}
 
-\item{queue}{A Redis key name of the task queue, or a}
+\item{queue}{A Redis key name of the task queue, or a
+\code{RedisWorkerConfiguration} object as returned by \code{\link[=startLocalWorkers]{startLocalWorkers()}}.}
 
 \item{config}{A \link[redux:redis_config]{redux::redis_config} Redis configuration object.}
 
@@ -66,7 +67,6 @@ print(pi_est)
 stopLocalWorkers(workers)
 
 }
-
 }
 \seealso{
 \code{\link[redux:redis_config]{redux::redis_config()}}, \code{\link[=worker]{worker()}}, \code{\link[=removeQ]{removeQ()}}

@@ -38,7 +38,8 @@ to be attached in the \R environment evaluating the future.}
 \item{lazy}{If FALSE (default), the future is resolved
 eagerly (starting immediately), otherwise not.}
 
-\item{queue}{A Redis key name of the task queue, or a}
+\item{queue}{A Redis key name of the task queue, or a
+\code{RedisWorkerConfiguration} object as returned by \code{\link[=startLocalWorkers]{startLocalWorkers()}}.}
 
 \item{config}{A \link[redux:redis_config]{redux::redis_config} Redis configuration object.}
 
