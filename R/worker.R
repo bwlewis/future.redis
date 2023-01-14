@@ -193,6 +193,7 @@ processTask <- function(task, redis)
 #' plan(redis, queue = "R jobs")
 #' 
 #' # Start some local R worker processes:
+#' ## FIXME: Make Redis queue unique to avoid wreaking havoc
 #' startLocalWorkers(n=2, queue="R jobs", linger=1.0)
 #' 
 #' # A function that returns a future (note the scope of N)
@@ -205,6 +206,7 @@ processTask <- function(task, redis)
 #' print(pi_est)
 #' 
 #' # Clean up
+#' ## FIXME: Make Redis queue unique to avoid wreaking havoc
 #' removeQ("R jobs")
 #' }
 #'

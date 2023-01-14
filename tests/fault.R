@@ -21,6 +21,7 @@ quitter <- function() {
 if(nchar(Sys.getenv("TEST_FAULT")) > 0 && redux::redis_available()) {
   library("future.redis")
   plan(redis, max_retries = 2)
+  ## FIXME: Make Redis queue unique to avoid wreaking havoc
   startLocalWorkers(2, linger = 1)
   t1 <- Sys.time()
   f <- quitter()
@@ -33,5 +34,6 @@ if(nchar(Sys.getenv("TEST_FAULT")) > 0 && redux::redis_available()) {
   ans <- value(f)
   if(!isTRUE(inherits(ans, "error"))) stop("max_retries fault tolerance error")
 
+  ## FIXME: Make Redis queue unique to avoid wreaking havoc
   removeQ()
 }
