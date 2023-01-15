@@ -36,37 +36,3 @@ redis <- function(expr,
   invisible(future)
 }
 class(redis) <- c("RedisFuture", "future", "function")
-
-
-
-#' Remove a Redis-based work queue
-#'
-#' Redis keys beginning with the `queue` name are removed.
-#' Removing the work queue signals to local and remote R workers to exit.
-#'
-#' @inheritParams RedisFuture
-#'
-#' @param queue Redis key name of the task queue (Redis list)
-#'
-#' @return NULL is silently returned (this function is evaluated for the
-#' side-effect of altering Redis state).
-#'
-#' @importFrom redux redis_config hiredis
-#' @export
-removeQ <- function(queue = getOption("future.redis.queue", "{{session}}"), config = redis_config())
-{
-  queue <- redis_queue(queue)
-  redis <- hiredis(config)
-
-  # Redis keys used
-  key_alive <- sprintf("%s.live", queue)
-
-  ## Remove task queue liveness key
-  redis[["DEL"]](key = key_alive)
-
-  ## Remove all other keys for this queue
-  all_keys <- redis[["KEYS"]](pattern = sprintf("%s.*", queue))
-  Map(f = redis[["DEL"]], all_keys)
-  
-  invisible()
-}
