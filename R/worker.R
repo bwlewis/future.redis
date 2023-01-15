@@ -76,9 +76,10 @@ worker <- function(queue = getOption("future.redis.queue", "{{session}}"),
       mdebugf("%s worker (PID=%d) waiting for next task #%g", .packageName, Sys.getpid(), N)
       taskid <- redis[["BRPOP"]](key = queue, timeout = linger)[[2]]
       if(!is.null(taskid)) {
-        mdebugf("Retrieved task #%g (%s)", N, taskid)
+        task <- sprintf("%s.%s", queue, taskid)
+        mdebugf("Retrieved task #%g (%s)", N, task)
         N <- N + 1
-        processTask(task = sprintf("%s.%s", queue, taskid), redis = redis)
+        processTask(task = task, redis = redis)
       }
       
       # Check for queue liveness key, worker exit if missing
@@ -121,14 +122,21 @@ processTask <- function(task, redis)
     uncerealize(redis[["GET"]](key = task))
   }, error = function(e) NULL)
   if(is.null(future)) return()
-  
   mdebugf("Obtained future %s", task)
+  stopifnot(inherits(future, "RedisFuture"))
 
   ## Redis keys used
   key_prefix <- sprintf("%s.%s", future[["queue"]], future[["taskid"]])
+  stopifnot(identical(key_prefix, task))
   key_alive <- sprintf("%s.live", key_prefix)
   key_status <- sprintf("%s.status", key_prefix)
   key_output_queue <- future[["output_queue"]]
+
+  ## Extract future (expression, packages)
+  expr <- getExpression(future)
+  packages <- future[["packages"]]
+  envir <- future[["envir"]]
+  future <- NULL ## Not needed anymore
   
   # Set ephemeral (5.0s) task liveness key
   redis[["SET"]](key = key_alive, value = "OK")
@@ -145,15 +153,15 @@ processTask <- function(task, redis)
   redis[["SET"]](key = key_status, value = "running")
 
   # Process the future, first attaching required packages (if any)
-  for(p in future[["packages"]]) {
+  for(p in packages) {
     library(p, character.only = TRUE, quietly = TRUE)
   }
 
   # Evaluate the future
-  ans <- eval(getExpression(future), envir = future[["envir"]])
+  ans <- eval(expr, envir = envir)
   
   # Detach packages
-  for(p in future[["packages"]]) {
+  for(p in packages) {
     tryCatch(detach(sprintf("package:%s", p), character.only = TRUE), error = invisible)
   }
   
