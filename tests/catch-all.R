@@ -2,9 +2,6 @@
 library("future.redis")
 
 # utils.R
-stopifnot(tryCatch({future.redis:::assign_globals(pi)}, error = function(e) TRUE))
-stopifnot(tryCatch({future.redis:::assign_globals(new.env(), globals = pi)}, error = function(e) TRUE))
-stopifnot(!isTRUE(future.redis:::inherits_from_namespace(baseenv())))
 stopifnot(is.null(future.redis:::uncerealize(NULL)))
 stopifnot(future.redis:::uncerealize(0L) == 0L)
 if (redux::redis_available()) {

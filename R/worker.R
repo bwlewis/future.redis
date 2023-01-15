@@ -123,6 +123,7 @@ processTask <- function(task, redis)
   }, error = function(e) NULL)
   if(is.null(future)) return()
   mdebugf("Obtained future %s", task)
+  mprint(future)
   stopifnot(inherits(future, "RedisFuture"))
 
   ## Redis keys used
@@ -134,8 +135,8 @@ processTask <- function(task, redis)
 
   ## Extract future (expression, packages)
   expr <- getExpression(future)
+  globals <- future[["globals"]]
   packages <- future[["packages"]]
-  envir <- future[["envir"]]
   future <- NULL ## Not needed anymore
   
   # Set ephemeral (5.0s) task liveness key
@@ -156,6 +157,14 @@ processTask <- function(task, redis)
   for(p in packages) {
     library(p, character.only = TRUE, quietly = TRUE)
   }
+
+  envir <- new.env(parent = globalenv())
+  
+  if (length(globals) > 0L) {
+    assign_globals <- import_future("assign_globals")
+    envir <- assign_globals(envir, globals = globals)
+  }
+  globals <- NULL ## Not needed anymore
 
   # Evaluate the future
   ans <- eval(expr, envir = envir)

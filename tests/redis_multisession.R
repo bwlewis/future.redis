@@ -10,10 +10,17 @@ if (redux::redis_available()) {
   
   plan(redis, workers = workers)
 
+  message("- future(42)")
   f <- future(42L)
   v <- value(f)
   stopifnot(identical(v, 42L))
-  
+
+  message("- future(2*a)")
+  a <- 3.14
+  f <- future(2*a)
+  v <- value(f)
+  stopifnot(identical(v, 2*3.14))
+
   # Make sure to stop the workers
   stopLocalWorkers(workers)
 

@@ -59,12 +59,10 @@ RedisFuture <- function(expr = NULL,
     gp <- NULL
   }
 
-  envir <- new.env(parent = envir)
-  envir <- assign_globals(envir, globals = globals)
-
   future <- Future(expr = expr,
                    substitute = substitute,
                    envir = envir,
+                   globals = globals,
                    packages = packages,
                    lazy = lazy,
                    ...)
@@ -175,7 +173,7 @@ resubmit <- function(future, redis) {
     redis[["SET"]](key = keys[["status"]], value = "submitted")
     redis[["LPUSH"]](key = keys[["queue"]], value = future[["taskid"]])
   })
-  mstr(status, debug = debug)
+  mstr(status)
 
   invisible(future)
 }
