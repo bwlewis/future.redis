@@ -27,7 +27,13 @@ redis_multisession <- local({
            max_retries = 3L)
   {
     if (substitute) expr <- substitute(expr)
-  
+
+    if (is.null(workers)) {
+      .workers <<- NULL
+      .nworkers <<- 0L
+      return(invisible())
+    }
+
     if (inherits(workers, "RedisWorkerConfiguration")) {
       queue <- workers[["queue"]]
       config <- workers[["config"]]
