@@ -1,11 +1,12 @@
 Package: future.redis
-Version: 0.0.1-9001
+Version: 0.0.1-9002
 Depends:
     R (>= 3.2.0),
     future (>= 1.23.0)
 Imports:
     base64enc,
     digest,
+    parallelly,
     redux,
     utils
 Suggests:

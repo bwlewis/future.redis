@@ -35,4 +35,4 @@ redis <- function(expr,
   if(!isTRUE(future[["lazy"]])) future <- run(future)
   invisible(future)
 }
-class(redis) <- c("RedisFuture", "future", "function")
+class(redis) <- c("redis", "multiprocess", "future", "function")
