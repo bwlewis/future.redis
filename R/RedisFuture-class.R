@@ -32,7 +32,7 @@ RedisFuture <- function(expr = NULL,
                         packages = NULL,
                         envir = parent.frame(),
                         lazy = FALSE,
-                        queue = "RJOBS",
+                        queue = getOption("future.redis.queue", "{{session}}"),
                         config = redis_config(),
                         output_queue = NA,
                         max_retries = 3,
@@ -57,7 +57,7 @@ RedisFuture <- function(expr = NULL,
                    lazy = lazy,
                    ...)
   future[["config"]] <- config
-  future[["queue"]] <- as.character(queue)
+  future[["queue"]] <- redis_queue(queue)
   future[["retries"]] <- 0L
   future[["state"]] <- "created"
   future[["max_retries"]] <- as.integer(max_retries)

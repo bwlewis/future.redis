@@ -46,7 +46,7 @@ if (redux::redis_available()) {
   l <- list()
   attributes(l)[["already-done"]] = FALSE
   g <- future.redis:::RedisFuture(expr = 0L, globals = l, substitute = FALSE,
-         queue = "RJOBS", config = redux::redis_config(),
+         queue = getOption("future.redis.queue", "{{session}}"), config = redux::redis_config(),
          output_queue = NA, max_retries = 1L)
   # NOTE! substitute = TRUE fails on value below? TO FIX XXX
   stopifnot(value(g) == 0L)
@@ -54,5 +54,5 @@ if (redux::redis_available()) {
   stopifnot(value(v) == 0L)
   removeQ()
 # null task (we know for sure 'RJOBS' is not in redis from above test removeQ)
-  stopifnot(is.null(future.redis:::processTask("RJOBS", redux::hiredis())))
+  stopifnot(is.null(future.redis:::processTask(getOption("future.redis.queue", "{{session}}"), redux::hiredis())))
 }

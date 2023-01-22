@@ -38,7 +38,7 @@ redis <- function(expr,
                   envir = parent.frame(),
                   substitute = TRUE,
                   globals = TRUE,
-                  queue = "RJOBS",
+                  queue = getOption("future.redis.queue", "{{session}}"),
                   config = redis_config(),
                   output_queue = NA,
                   max_retries = 3, ...)
@@ -65,8 +65,9 @@ class(redis) <- c("RedisFuture", "future", "function")
 #' side-effect of altering Redis state).
 #' @importFrom redux redis_config hiredis
 #' @export
-removeQ <- function(queue = "RJOBS", config = redis_config())
+removeQ <- function(queue = getOption("future.redis.queue", "{{session}}"), config = redis_config())
 {
+  queue <- redis_queue(queue)
   hiredis(config)[["DEL"]](sprintf("%s.live", queue))  # task queue liveness key
   all_keys <- hiredis(config)[["KEYS"]](sprintf("%s.*", queue))
   del <- hiredis(config)[["DEL"]]

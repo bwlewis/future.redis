@@ -15,13 +15,14 @@
 #' @return After conclusion of the worker loop, either R exits or NULL
 #' is silently returned.
 #' @export
-worker <- function(queue = "RJOBS",
+worker <- function(queue = getOption("future.redis.queue", "{{session}}"),
                    linger = 10,
                    config = redis_config(),
                    iter = Inf,
                    quit = FALSE,
                    log = NULL)
 {
+  queue <- redis_queue(queue)
   if(quit) {
     on.exit(quit(save = "no"))
   }
@@ -143,10 +144,11 @@ processTask <- function(task, redis)
 #' removeQ("R jobs")
 #' }
 #' @export
-startLocalWorkers <- function(n, queue = "RJOBS",
+startLocalWorkers <- function(n, queue = getOption("future.redis.queue", "{{session}}"),
   config = redis_config(), iter = Inf, linger = 10, log = NULL,
   Rbin = paste(R.home(component = "bin"), "R", sep="/"))
 {
+  queue <- redis_queue(queue)
   args <- list(queue = queue, linger = linger, config = config,
                iter = iter, quit = TRUE, log = log)
   cmd <- sprintf("-s --no-save -e \"suppressMessages(require(future.redis, quietly = TRUE)); args <- unserialize(base64enc::base64decode('%s')); do.call('worker', args)\"", base64encode(serialize(args, NULL)))
