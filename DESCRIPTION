@@ -10,4 +10,4 @@ Description: A future API implementation using the Redis key/value database to d
 License: LGPL (>= 2.1)
 Imports: redux, digest, base64enc
 LazyLoad: TRUE
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
