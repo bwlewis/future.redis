@@ -5,7 +5,7 @@ Depends:
     future (>= 1.23.0)
 Suggests: future.tests
 Title: An Elastic Distributed Computing Backend for the Future Package
-Authors@R: c(person("Bryan", "Lewis", role=c("aut", "cre", "cph"), email = "blewis@illposed.net"))
+Authors@R: c( person("Henrik", "Bengtsson", role=c("aut", "cph"), email = "henrikb@braju.com"), person("Bryan", "Lewis", role=c("aut", "cre", "cph"), email = "blewis@illposed.net"))
 Description: A future API implementation using the Redis key/value database to define partially fault-tolerant task queues for elastic distributed computing.
 License: LGPL (>= 2.1)
 Imports: redux, digest, base64enc
