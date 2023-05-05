@@ -20,18 +20,22 @@ quitter <- function() {
 
 if(nchar(Sys.getenv("TEST_FAULT")) > 0 && redux::redis_available()) {
   library("future.redis")
-  plan(redis, max_retries = 2)
-  startLocalWorkers(2, linger = 1)
+
+  workers <- startLocalWorkers(2, linger = 1.0)
+  
+  plan(redis, max_retries = 2L)
+
   t1 <- Sys.time()
   f <- quitter()
   if(!isTRUE(value(f) == pi)) stop("resubmit fault tolerance value error")
 
-# test of max retries on the remaining worker, expect an error
-  plan(redis, max_retries = 1)
+  # test of max retries on the remaining worker, expect an error
+  plan(redis, max_retries = 1L)
   t1 <- Sys.time()
   f <- quitter()
   ans <- value(f)
   if(!isTRUE(inherits(ans, "error"))) stop("max_retries fault tolerance error")
 
-  removeQ()
+  ## Make sure to stop local workers
+  stopLocalWorkers(workers)
 }

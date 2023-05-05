@@ -10,9 +10,9 @@
 #' ## The example assumes that a Redis server is running on the local host
 #' ## and standard port.
 #' plan(redis)
-#' startLocalWorkers(2, linger=1)
+#' workers <- startLocalWorkers(2, linger = 1.0)
 #' demo("mandelbrot", package = "future", ask = FALSE)
-#' removeQ()
+#' stopLocalWorkers(workers)
 #' }
 #' }
 #'
