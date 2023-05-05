@@ -67,7 +67,7 @@ RedisFuture <- function(expr = NULL,
                    lazy = lazy,
                    ...)
   future[["config"]] <- config
-  future[["queue"]] <- queue
+  future[["queue"]] <- redis_queue(queue)
   future[["retries"]] <- 0L
   future[["state"]] <- "created"
   future[["max_retries"]] <- max_retries

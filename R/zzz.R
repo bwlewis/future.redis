@@ -16,4 +16,3 @@ FutureRegistry <- NULL
     options(future.redis.queue = value)
   }
 }
-

@@ -37,11 +37,11 @@ Key features of future.redis are:
 
 \item future.redis allows for dynamic pools of workers. New workers may be
 added at any time, even in the middle of running computations.  This feature is
-geared for modern cloud computing environments, including spot compute markets.
+geared for modern cloud computing environments like spot compute markets.
 
-\item future.redis computations are partially fault tolerant. Failure of
-worker R processes, for instance due to spot instance termination,
-are detected and affected tasks are automatically re-submitted.
+\item future.redis computations are {\it partially} fault tolerant. Failure of
+worker R processes, for instance due to spot instance termination, are detected
+and affected tasks are automatically re-submitted.
 
 \item future.redis makes it particularly easy to run parallel jobs across
 different operating systems. It works equally well on GNU/Linux, Mac OS X, and
@@ -71,8 +71,8 @@ the operation with CTRL + C or similar signal).
 
 \section{Obtaining and Configuring a Redis server}\label{install}
 
-Redis is an extremely popular open-source networked key/value database, and
-operating system-specific packages are available for all major operating
+Redis is an extremely popular open-source networked key/value database.
+Operating system-specific packages are available for all major operating
 systems, including Windows.
 For more information see: {\tt{https://redis.io/download}}.
 
@@ -81,10 +81,9 @@ important to make sure that the \verb+timeout+ setting is set to \verb+0+ in
 the \verb+redis.conf+ file when using future.redis.  You may wish to peruse the
 rest of the configuration file and experiment with the other server settings.
 In particular if you plan to communicate with Redis over more than one computer
-make sure that it's configured to listen on all appropriate network
-interfaces--and if those computers are on an untrusted network work carefully
-to secure their communication and to prohibit outside access to the Redis
-server!
+make sure that it's configured to listen on appropriate network interfaces--and
+if those computers are on an untrusted network be sure to carefully secure
+their communication and to prohibit outside access to the Redis server!
 
 
 \section{Getting started}
@@ -102,7 +101,7 @@ plan(redis)
 The ``redis'' plan is a function that takes a number of optional arguments,
 including the name of a task work queue to set up in Redis. The default
 task queue name is ``RJOBS''. Additional Redis server communication parameters
-and other options can be set there, see \verb+?plan+ for help.
+and other options can be set there, see \verb+?future.redis::redis+ for help.
 
 \subsection*{Starting local workers}
 
@@ -113,7 +112,7 @@ on the local computer:
 \begin{verbatim}
 startLocalWorkers(n = 2, linger = 1, log = "/dev/null")
 \end{verbatim}
-The \verb+linger+ option controls how quickly the workers quit once the task
+The \verb+linger+ option controls how quickly the workers quit after the task
 queue is removed, in this case after approximately one second. A short linger
 interval is useful for interactive examples and quick clean-up.
 The \verb+log+ option controls where the workers print R messages during
@@ -228,8 +227,8 @@ IDs for clarity.
 
 \subsubsection*{Queue-global keys}
 \begin{itemize}
-\item[] {\bf RJOBS}: The task first-in-first-out queue, a Redis "list" value type. The manager R process places task IDs to run in this queue. Worker R processes pull tasks IDs to run from this queue.
-\item[] {\bf RJOBS.live}:  Existence of this key is a hint to the system that the RJOBS queue is in use. Removal of this key using 'removeQ()' or otherwise is a signal to worker R processes listening for work on the RJOBS queue to exit.
+\item[] {\bf RJOBS}: The task first-in-first-out queue, a Redis ``list'' value type. The manager R process places task IDs to run in this queue. Worker R processes pull tasks IDs to run from this queue.
+\item[] {\bf RJOBS.live}:  Existence of this key is a hint to the system that the RJOBS queue is in use. Removal of this key using \verb+removeQ()+ or otherwise is a signal to worker R processes listening for work on the RJOBS queue to exit.
 \end{itemize}
 
 \subsubsection*{Per-task keys}
@@ -272,7 +271,7 @@ a short interval.
 
 Then the worker R process starts a thread running to maintain the state of
 the liveness key by periodically extending its expiration interval a short
-while. Task liveness is maintained in a (very limited) thread so that the
+while. Task liveness is maintained by a (very limited) thread so that the
 worker R process can independently go about its business of processing the task.
 
 If the worker R process crashes, or if it is externally terminated by a scheduling

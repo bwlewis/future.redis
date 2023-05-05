@@ -27,12 +27,9 @@ identified.}
 
 \item{...}{Additional named elements of the future.}
 
-\item{workers}{A positive numeric scalar or a function specifying the
-maximum number of parallel futures that can be active at the same time
-before blocking.
+\item{workers}{The number of parallel processes to use.
 If a function, it is called without arguments \emph{when the future
-is created} and its value is used to configure the workers.
-The function should return a numeric scalar.}
+is created} and its value is used to configure the workers.}
 
 \item{queue}{A Redis key name of the task queue, or a
 \code{RedisWorkerConfiguration} object as returned by \code{\link[=startLocalWorkers]{startLocalWorkers()}}.}
